@@ -52,6 +52,7 @@ import android.window.TaskSnapshot;
 import com.android.internal.app.IVoiceInteractionManagerService;
 import com.android.systemui.shared.recents.model.Task;
 import com.android.systemui.shared.recents.model.ThumbnailData;
+import com.android.wm.shell.recents.IRecentsAnimationRunner;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -225,51 +226,24 @@ public class ActivityManagerWrapper {
     public boolean startRecentsActivity(
             Intent intent, long eventTime, RecentsAnimationListener animationHandler) {
         try {
-            RecentsAnimationRunnerCompat runner = null;
+            IRecentsAnimationRunner runner = null;
             if (animationHandler != null) {
-                runner = new RecentsAnimationRunnerCompat() {
+                runner = new IRecentsAnimationRunner.Stub() {
                     @Override
                     public void onAnimationStart(IRecentsAnimationController controller,
                                                  RemoteAnimationTarget[] apps, RemoteAnimationTarget[] wallpapers,
-                                                 Rect homeContentInsets, Rect minimizedHomeBounds) {
+                                                 Rect homeContentInsets, Rect minimizedHomeBounds,
+                                                 Bundle extras) {
                         final RecentsAnimationControllerCompat controllerCompat =
-                                new RecentsAnimationControllerCompat(controller);
+                            new RecentsAnimationControllerCompat(controller);
                         animationHandler.onAnimationStart(controllerCompat, apps,
-                                wallpapers, homeContentInsets, minimizedHomeBounds, new Bundle());
+                            wallpapers, homeContentInsets, minimizedHomeBounds, extras);
                     }
 
                     @Override
                     public void onAnimationCanceled(int[] taskIds, TaskSnapshot[] taskSnapshots) {
                         animationHandler.onAnimationCanceled(
-                                ThumbnailData.wrap(taskIds, taskSnapshots));
-                    }
-
-
-                    /**
-                     * compat for android 12/11/10
-                     */
-                    public void onAnimationCanceled(Object taskSnapshot) {
-                        if (LawnchairQuickstepCompat.ATLEAST_S) {
-                            animationHandler.onAnimationCanceled(
-                                    ThumbnailData.wrap(new int[]{0}, new TaskSnapshot[]{(TaskSnapshot) taskSnapshot}));
-                        } else if (LawnchairQuickstepCompat.ATLEAST_R) {
-                            ActivityManagerCompatVR compat = (ActivityManagerCompatVR) LawnchairQuickstepCompat.getActivityManagerCompat();
-                            ActivityManagerCompatVR.ThumbnailData data = compat.convertTaskSnapshotToThumbnailData(taskSnapshot);
-                            HashMap<Integer, ThumbnailData> thumbnailDatas = new HashMap<>();
-                            if (data != null) {
-                                thumbnailDatas.put(0, new ThumbnailData());
-                            }
-                            animationHandler.onAnimationCanceled(thumbnailDatas);
-                        } else {
-                            animationHandler.onAnimationCanceled(new HashMap<>());
-                        }
-                    }
-
-                    /**
-                     * compat for android 12/11
-                     */
-                    public void onTaskAppeared(RemoteAnimationTarget app) {
-                        animationHandler.onTasksAppeared(new RemoteAnimationTarget[]{app});
+                            ThumbnailData.wrap(taskIds, taskSnapshots));
                     }
 
                     @Override
@@ -278,7 +252,7 @@ public class ActivityManagerWrapper {
                     }
                 };
             }
-            LawnchairQuickstepCompat.getActivityManagerCompat().startRecentsActivity(intent, eventTime, runner);
+            preloadRecentsActivity(intent);
             return true;
         } catch (Exception e) {
             return false;
