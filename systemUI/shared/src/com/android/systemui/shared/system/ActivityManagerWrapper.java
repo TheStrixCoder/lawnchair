@@ -45,7 +45,7 @@ import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
-import android.view.IRecentsAnimationController;
+import com.android.wm.shell.recents.IRecentsAnimationController;
 import android.view.RemoteAnimationTarget;
 import android.window.TaskSnapshot;
 

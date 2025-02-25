@@ -149,8 +149,8 @@ import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.window.flags2.Flags;
-import com.android.wm.shell.common.TransactionPool;
-import com.android.wm.shell.startingsurface.SplashScreenExitAnimationUtils;
+import com.android.wm.shell.shared.TransactionPool;
+import com.android.wm.shell.shared.startingsurface.SplashScreenExitAnimationUtils;
 
 import kotlin.Unit;
 

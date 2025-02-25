@@ -46,7 +46,7 @@ import com.android.launcher3.R;
 import com.android.launcher3.anim.SpringAnimationBuilder;
 import com.android.launcher3.util.DisplayController;
 import com.android.wm.shell.Flags;
-import com.android.wm.shell.common.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 
 import java.util.List;
 import java.util.function.Consumer;

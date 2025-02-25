@@ -28,7 +28,7 @@ import android.widget.FrameLayout
 import androidx.core.view.updateLayoutParams
 import com.android.launcher3.R
 import com.android.wm.shell.common.bubbles.BaseBubblePinController
-import com.android.wm.shell.common.bubbles.BubbleBarLocation
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation
 
 /** Controller to manage pinning bubble bar to left or right when dragging starts from a bubble */
 class BubblePinController(

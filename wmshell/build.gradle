@@ -20,6 +20,7 @@ android {
 }
 
 addFrameworkJar('framework-15.jar')
+addFrameworkJar('WindowManager-Shell-15.jar')
 compileOnlyCommonJars()
 
 dependencies {

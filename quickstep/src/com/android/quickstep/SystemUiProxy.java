@@ -45,8 +45,8 @@ import android.os.Message;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.Log;
-import android.view.IRecentsAnimationController;
-import android.view.IRecentsAnimationRunner;
+import com.android.wm.shell.recents.IRecentsAnimationController;
+import com.android.wm.shell.recents.IRecentsAnimationRunner;
 import android.view.IRemoteAnimationRunner;
 import android.view.MotionEvent;
 import android.view.RemoteAnimationAdapter;
@@ -85,11 +85,11 @@ import com.android.systemui.unfold.progress.IUnfoldTransitionListener;
 import com.android.wm.shell.back.IBackAnimation;
 import com.android.wm.shell.bubbles.IBubbles;
 import com.android.wm.shell.bubbles.IBubblesListener;
-import com.android.wm.shell.common.bubbles.BubbleBarLocation;
-import com.android.wm.shell.common.desktopmode.DesktopModeTransitionSource;
+import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
+import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
 import com.android.wm.shell.common.pip.IPip;
 import com.android.wm.shell.common.pip.IPipAnimationListener;
-import com.android.wm.shell.common.split.SplitScreenConstants.PersistentSnapPosition;
+import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 import com.android.wm.shell.desktopmode.IDesktopMode;
 import com.android.wm.shell.desktopmode.IDesktopTaskListener;
 import com.android.wm.shell.draganddrop.IDragAndDrop;
@@ -102,7 +102,7 @@ import com.android.wm.shell.splitscreen.ISplitScreenListener;
 import com.android.wm.shell.splitscreen.ISplitSelectListener;
 import com.android.wm.shell.startingsurface.IStartingWindow;
 import com.android.wm.shell.startingsurface.IStartingWindowListener;
-import com.android.wm.shell.util.GroupedRecentTaskInfo;
+import com.android.wm.shell.shared.GroupedRecentTaskInfo;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -848,7 +848,8 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
     public void dragBubbleToDismiss(String key) {
         if (mBubbles == null) return;
         try {
-            mBubbles.dragBubbleToDismiss(key);
+            // todo : bidyadhar ... what value?
+            mBubbles.dragBubbleToDismiss(key, System.currentTimeMillis());
         } catch (RemoteException e) {
             Log.w(TAG, "Failed call dragBubbleToDismiss");
         }
@@ -1007,13 +1008,13 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
                                                @PersistentSnapPosition int snapPosition, RemoteAnimationAdapter adapter,
                                                InstanceId instanceId) {
         if (mSystemUiProxy != null) {
-            try {
-                mSplitScreen.startTasksWithLegacyTransition(taskId1, options1, taskId2, options2,
-                        splitPosition, snapPosition, adapter, instanceId);
-            } catch (RemoteException e) {
-                Log.w(TAG, splitFailureMessage(
-                        "startTasksWithLegacyTransition", "RemoteException"), e);
-            }
+//            try {
+//                mSplitScreen.startTasksWithLegacyTransition(taskId1, options1, taskId2, options2,
+//                        splitPosition, snapPosition, adapter, instanceId);
+//            } catch (RemoteException e) {
+//                Log.w(TAG, splitFailureMessage(
+//                        "startTasksWithLegacyTransition", "RemoteException"), e);
+//            }
         }
     }
 
@@ -1022,14 +1023,14 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
                                                        @PersistentSnapPosition int snapPosition, RemoteAnimationAdapter adapter,
                                                        InstanceId instanceId) {
         if (mSystemUiProxy != null) {
-            try {
-                mSplitScreen.startIntentAndTaskWithLegacyTransition(pendingIntent, userId1,
-                        options1, taskId, options2, splitPosition, snapPosition, adapter,
-                        instanceId);
-            } catch (RemoteException e) {
-                Log.w(TAG, splitFailureMessage(
-                        "startIntentAndTaskWithLegacyTransition", "RemoteException"), e);
-            }
+//            try {
+//                mSplitScreen.startIntentAndTaskWithLegacyTransition(pendingIntent, userId1,
+//                        options1, taskId, options2, splitPosition, snapPosition, adapter,
+//                        instanceId);
+//            } catch (RemoteException e) {
+//                Log.w(TAG, splitFailureMessage(
+//                        "startIntentAndTaskWithLegacyTransition", "RemoteException"), e);
+//            }
         }
     }
 
@@ -1038,13 +1039,13 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
                                                          @PersistentSnapPosition int snapPosition, RemoteAnimationAdapter adapter,
                                                          InstanceId instanceId) {
         if (mSystemUiProxy != null) {
-            try {
-                mSplitScreen.startShortcutAndTaskWithLegacyTransition(shortcutInfo, options1,
-                        taskId, options2, splitPosition, snapPosition, adapter, instanceId);
-            } catch (RemoteException e) {
-                Log.w(TAG, splitFailureMessage(
-                        "startShortcutAndTaskWithLegacyTransition", "RemoteException"), e);
-            }
+//            try {
+//                mSplitScreen.startShortcutAndTaskWithLegacyTransition(shortcutInfo, options1,
+//                        taskId, options2, splitPosition, snapPosition, adapter, instanceId);
+//            } catch (RemoteException e) {
+//                Log.w(TAG, splitFailureMessage(
+//                        "startShortcutAndTaskWithLegacyTransition", "RemoteException"), e);
+//            }
         }
     }
 
@@ -1059,14 +1060,14 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
                                                  @PersistentSnapPosition int snapPosition, RemoteAnimationAdapter adapter,
                                                  InstanceId instanceId) {
         if (mSystemUiProxy != null) {
-            try {
-                mSplitScreen.startIntentsWithLegacyTransition(pendingIntent1, userId1,
-                        shortcutInfo1, options1, pendingIntent2, userId2, shortcutInfo2, options2,
-                        sidePosition, snapPosition, adapter, instanceId);
-            } catch (RemoteException e) {
-                Log.w(TAG, splitFailureMessage(
-                        "startIntentsWithLegacyTransition", "RemoteException"), e);
-            }
+//            try {
+//                mSplitScreen.startIntentsWithLegacyTransition(pendingIntent1, userId1,
+//                        shortcutInfo1, options1, pendingIntent2, userId2, shortcutInfo2, options2,
+//                        sidePosition, snapPosition, adapter, instanceId);
+//            } catch (RemoteException e) {
+//                Log.w(TAG, splitFailureMessage(
+//                        "startIntentsWithLegacyTransition", "RemoteException"), e);
+//            }
         }
     }
 
@@ -1113,11 +1114,11 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
     @Nullable
     public RemoteAnimationTarget[] onGoingToRecentsLegacy(RemoteAnimationTarget[] apps) {
         if (!TaskAnimationManager.ENABLE_SHELL_TRANSITIONS && mSplitScreen != null) {
-            try {
-                return mSplitScreen.onGoingToRecentsLegacy(apps);
-            } catch (RemoteException e) {
-                Log.w(TAG, "Failed call onGoingToRecentsLegacy");
-            }
+//            try {
+//                return mSplitScreen.onGoingToRecentsLegacy(apps);
+//            } catch (RemoteException e) {
+//                Log.w(TAG, "Failed call onGoingToRecentsLegacy");
+//            }
         }
         return null;
     }
@@ -1125,11 +1126,11 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle, SafeCloseable {
     @Nullable
     public RemoteAnimationTarget[] onStartingSplitLegacy(RemoteAnimationTarget[] apps) {
         if (mSplitScreen != null) {
-            try {
-                return mSplitScreen.onStartingSplitLegacy(apps);
-            } catch (RemoteException e) {
-                Log.w(TAG, "Failed call onStartingSplitLegacy");
-            }
+//            try {
+//                return mSplitScreen.onStartingSplitLegacy(apps);
+//            } catch (RemoteException e) {
+//                Log.w(TAG, "Failed call onStartingSplitLegacy");
+//            }
         }
         return null;
     }

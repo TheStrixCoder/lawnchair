@@ -22,6 +22,7 @@ import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
 import static com.android.window.flags2.Flags.enableDesktopWindowingWallpaperActivity;
 
 import android.os.Debug;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 
@@ -82,6 +83,11 @@ public class DesktopVisibilityController {
             @Override
             public void onStashedChanged(int displayId, boolean stashed) {
               Log.w(TAG, "IDesktopTaskListener: onStashedChanged is deprecated");
+            }
+
+            @Override
+            public void onTaskbarCornerRoundingUpdate(boolean b) throws RemoteException {
+                Log.e(TAG, "IDesktopTaskListener: onTaskbarCornerRoundingUpdate is called");
             }
         };
         SystemUiProxy.INSTANCE.get(mLauncher).setDesktopTaskListener(mDesktopTaskListener);

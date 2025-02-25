@@ -17,7 +17,7 @@
 package com.android.quickstep.util
 
 import com.android.launcher3.util.SplitConfigurationOptions
-import com.android.wm.shell.util.SplitBounds
+import com.android.wm.shell.shared.split.SplitBounds
 
 class SplitScreenUtils {
     companion object {

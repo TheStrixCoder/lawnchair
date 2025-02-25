@@ -77,15 +77,15 @@ public class AssistContentRequester {
      */
     public void requestAssistContent(final int taskId, final Callback callback) {
         // ActivityTaskManager interaction here is synchronous, so call off the main thread.
-        mSystemInteractionExecutor.execute(() -> {
-            try {
-                mActivityTaskManager.requestAssistDataForTask(
-                        new AssistDataReceiver(callback, this), taskId, mPackageName,
-                        mAttributionTag);
-            } catch (RemoteException e) {
-                Log.e(TAG, "Requesting assist content failed for task: " + taskId, e);
-            }
-        });
+//        mSystemInteractionExecutor.execute(() -> {
+//            try {
+//                mActivityTaskManager.requestAssistDataForTask(
+//                        new AssistDataReceiver(callback, this), taskId, mPackageName,
+//                        mAttributionTag);
+//            } catch (RemoteException e) {
+//                Log.e(TAG, "Requesting assist content failed for task: " + taskId, e);
+//            }
+//        });
     }
 
     private void executeOnMainExecutor(Runnable callback) {

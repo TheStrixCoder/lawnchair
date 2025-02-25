@@ -24,7 +24,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
-import android.view.IRecentsAnimationController;
+import com.android.wm.shell.recents.IRecentsAnimationController;
 import android.view.SurfaceControl;
 import android.view.WindowManagerGlobal;
 import android.window.PictureInPictureSurfaceTransaction;
