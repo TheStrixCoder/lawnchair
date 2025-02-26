@@ -30,6 +30,7 @@ import android.app.ActivityManager;
 import android.app.ActivityOptions;
 import android.app.Person;
 import android.app.WallpaperManager;
+import android.app.contextualsearch.ContextualSearchManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.LauncherActivityInfo;
@@ -1034,5 +1035,27 @@ public final class Utilities {
             }
         }
         return null;
+    }
+
+    public static boolean startContextualSearch(Context context, int entrypoint) {
+        Context appContext = context.getApplicationContext();
+        ContextualSearchManager contextualSearchManager =
+            (ContextualSearchManager) appContext.getSystemService(Context.CONTEXTUAL_SEARCH_SERVICE);
+        if (!com.android.internal.util.android.Utils.isPackageInstalled(
+            appContext, "com.google.android.googlequicksearchbox")
+            || contextualSearchManager == null) {
+            return false;
+        }
+        try {
+            contextualSearchManager.startContextualSearch(entrypoint);
+            return true;
+        } catch (Exception e) {}
+        return false;
+    }
+
+    public static boolean isLongPressSearchEnabled(Context context) {
+        return true;
+//        return Settings.Secure.getInt(
+//            context.getApplicationContext().getContentResolver(), "search_press_hold_nav_handle_enabled", 1) == 1;
     }
 }

@@ -26,6 +26,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.net.Uri;
+import android.os.Build;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -168,6 +169,29 @@ public class VibratorWrapper implements SafeCloseable {
     public void vibrateForDragBump() {
         if (mBumpEffect != null) {
             vibrate(mBumpEffect);
+        }
+    }
+
+    public void vibrateForSearchHint() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (mVibrator.areAllPrimitivesSupported(PRIMITIVE_LOW_TICK)) {
+                float startScalePercent = 0.0f;
+                float endScalePercent = 1.0f;
+                int scaleExponent = 1;
+                int iterations = 50;
+                int delay = 0;
+                VibrationEffect.Composition startComposition = VibrationEffect.startComposition();
+                for (int i = 0; i < iterations; i++) {
+                    float progress = i / (float) (iterations - 1);
+                    float scale = (float) Math.pow((progress * endScalePercent) + ((1.0f - progress) * startScalePercent), scaleExponent);
+                    if (i == 0) {
+                        startComposition.addPrimitive(PRIMITIVE_LOW_TICK, scale, delay);
+                    } else {
+                        startComposition.addPrimitive(PRIMITIVE_LOW_TICK, scale);
+                    }
+                }
+                vibrate(startComposition.compose());
+            }
         }
     }
 

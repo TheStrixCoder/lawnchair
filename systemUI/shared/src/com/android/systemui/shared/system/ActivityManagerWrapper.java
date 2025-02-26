@@ -252,7 +252,7 @@ public class ActivityManagerWrapper {
                     }
                 };
             }
-            preloadRecentsActivity(intent);
+            getService().preloadRecentsActivity(intent);
             return true;
         } catch (Exception e) {
             return false;
@@ -263,11 +263,11 @@ public class ActivityManagerWrapper {
      * Cancels the remote recents animation started from {@link #startRecentsActivity}.
      */
     public void cancelRecentsAnimation(boolean restoreHomeRootTaskPosition) {
-        try {
-            getService().cancelRecentsAnimation(restoreHomeRootTaskPosition);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Failed to cancel recents animation", e);
-        }
+//        try {
+//            getService().cancelRecentsAnimation(restoreHomeRootTaskPosition);
+//        } catch (RemoteException e) {
+//            Log.e(TAG, "Failed to cancel recents animation", e);
+//        }
     }
 
     /**
@@ -282,13 +282,15 @@ public class ActivityManagerWrapper {
      */
     public void preloadRecentsActivity(Intent intent) {
         try {
-            Class<?> activityTaskManagerClass = Class.forName("android.app.ActivityTaskManager");
-            Method getServiceMethod = activityTaskManagerClass.getMethod("getService");
-            Object activityTaskManagerService = getServiceMethod.invoke(null);
-            Method preloadRecentsActivityMethod = activityTaskManagerService.getClass()
-                    .getMethod("preloadRecentsActivity", Intent.class);
-
-            preloadRecentsActivityMethod.invoke(activityTaskManagerService, intent);
+//            Class<?> activityTaskManagerClass = Class.forName("android.app.ActivityTaskManager");
+//            Method getServiceMethod = activityTaskManagerClass.getMethod("getService");
+//            Object activityTaskManagerService = getServiceMethod.invoke(null);
+//            Method preloadRecentsActivityMethod = activityTaskManagerService.getClass()
+//                    .getMethod("preloadRecentsActivity", Intent.class);
+//
+//            preloadRecentsActivityMethod.invoke(activityTaskManagerService, intent);
+            
+            getService().preloadRecentsActivity(intent);
         } catch (Throwable e) {
             Log.w(TAG, "Failed to preload recents activity", e);
             startRecentsActivity(intent, 0, null, null, null);
