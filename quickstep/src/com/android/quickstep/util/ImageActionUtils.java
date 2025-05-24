@@ -81,25 +81,17 @@ public class ImageActionUtils {
      */
     public static void saveScreenshot(SystemUiProxy systemUiProxy, Bitmap screenshot,
             Rect screenshotBounds, Insets visibleInsets, Task.TaskKey task) {
-        try {
-            ScreenshotRequest request =
-                    new ScreenshotRequest.Builder(TAKE_SCREENSHOT_PROVIDED_IMAGE, SCREENSHOT_OVERVIEW)
-                            .setTopComponent(task.sourceComponent)
-                            .setTaskId(task.id)
-                            .setUserId(task.userId)
-                            .setBitmap(screenshot)
-                            .setBoundsOnScreen(screenshotBounds)
-                            .setInsets(visibleInsets)
-                            .build();
-            systemUiProxy.takeScreenshot(request);
-        } catch (Throwable t) {
-            try {
-//                systemUiProxy.handleImageBundleAsScreenshot(BitmapUtil.hardwareBitmapToBundle(screenshot),
-//                        screenshotBounds, visibleInsets, task);
-            } catch (Throwable ee) {
-                Shell.cmd("input keyevent 120").exec();
-            }
-        }
+        ScreenshotRequest request =
+                new ScreenshotRequest.Builder(TAKE_SCREENSHOT_PROVIDED_IMAGE, SCREENSHOT_OVERVIEW)
+                .setTopComponent(task.sourceComponent)
+                .setTaskId(task.id)
+                .setUserId(task.userId)
+                .setBitmap(screenshot)
+                .setBoundsOnScreen(screenshotBounds)
+                .setInsets(visibleInsets)
+                .setDisplayId(task.displayId)
+                .build();
+        systemUiProxy.takeScreenshot(request);
     }
 
     /**

@@ -23,7 +23,6 @@ import android.app.ActivityTaskManager;
 import android.app.IActivityTaskManagerHidden;
 import android.app.PendingIntent;
 import android.content.Intent;
-import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 import android.util.Pair;
@@ -31,7 +30,6 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.window.SplashScreen;
 
-import com.android.launcher3.Utilities;
 import com.android.launcher3.logging.StatsLogManager;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.util.ActivityOptionsWrapper;
@@ -73,22 +71,16 @@ public class QuickstepInteractionHandler implements RemoteViews.InteractionHandl
         }
         Pair<Intent, ActivityOptions> options = remoteResponse.getLaunchOptions(view);
         ActivityOptionsWrapper activityOptions = mLauncher.getAppTransitionManager()
-                .getActivityLaunchOptions(hostView);
+                .getActivityLaunchOptions(hostView, (ItemInfo) hostView.getTag());
         if (!pendingIntent.isActivity()) {
             // In the event this pending intent eventually launches an activity, i.e. a trampoline,
             // use the Quickstep transition animation.
             try {
-                IActivityTaskManagerHidden atm = Refine.unsafeCast(ActivityTaskManager.getService());
-                try {
-                    atm.registerRemoteAnimationForNextActivityStart(
-                            pendingIntent.getCreatorPackage(),
-                            activityOptions.options.getRemoteAnimationAdapter(),
-                            activityOptions.options.getLaunchCookie());
-                } catch (NoSuchMethodError e) {
-                    atm.registerRemoteAnimationForNextActivityStart(
-                            pendingIntent.getCreatorPackage(),
-                            activityOptions.options.getRemoteAnimationAdapter());
-                }
+                ActivityTaskManager.getService()
+                        .registerRemoteAnimationForNextActivityStart(
+                                pendingIntent.getCreatorPackage(),
+                                activityOptions.options.getRemoteAnimationAdapter(),
+                                activityOptions.options.getLaunchCookie());
             } catch (RemoteException e) {
                 // Do nothing.
             }

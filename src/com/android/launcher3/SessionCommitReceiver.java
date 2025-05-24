@@ -77,11 +77,14 @@ public class SessionCommitReceiver extends BroadcastReceiver {
                 || alreadyAddedPromiseIcon) {
             FileLog.d(LOG,
                     String.format(Locale.ENGLISH,
-                            "Removing PromiseIcon for package: %s, install reason: %d,"
+                            "Removing unneeded PromiseIcon for package: %s"
+                                    + ", install reason: %d,"
                                     + " alreadyAddedPromiseIcon: %s",
-                            info.getAppPackageName(),
-                            info.getInstallReason(),
-                            alreadyAddedPromiseIcon));
+                    info.getAppPackageName(),
+                    info.getInstallReason(),
+                    alreadyAddedPromiseIcon
+                )
+            );
             packageInstallerCompat.removePromiseIconId(info.getSessionId());
             return;
         }

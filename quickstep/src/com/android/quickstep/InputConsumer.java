@@ -40,24 +40,26 @@ public interface InputConsumer {
     int TYPE_STATUS_BAR = 1 << 13;
     int TYPE_CURSOR_HOVER = 1 << 14;
     int TYPE_NAV_HANDLE_LONG_PRESS = 1 << 15;
+    int TYPE_BUBBLE_BAR = 1 << 16;
 
     String[] NAMES = new String[] {
-            "TYPE_NO_OP", // 0
-            "TYPE_OVERVIEW", // 1
-            "TYPE_OTHER_ACTIVITY", // 2
-            "TYPE_ASSISTANT", // 3
-            "TYPE_DEVICE_LOCKED", // 4
-            "TYPE_ACCESSIBILITY", // 5
-            "TYPE_SCREEN_PINNED", // 6
-            "TYPE_OVERVIEW_WITHOUT_FOCUS", // 7
-            "TYPE_RESET_GESTURE", // 8
-            "TYPE_PROGRESS_DELEGATE", // 9
-            "TYPE_SYSUI_OVERLAY", // 10
-            "TYPE_ONE_HANDED", // 11
-            "TYPE_TASKBAR_STASH", // 12
-            "TYPE_STATUS_BAR", // 13
-            "TYPE_CURSOR_HOVER", // 14
-            "TYPE_NAV_HANDLE_LONG_PRESS", // 15
+           "TYPE_NO_OP",                    // 0
+            "TYPE_OVERVIEW",                // 1
+            "TYPE_OTHER_ACTIVITY",          // 2
+            "TYPE_ASSISTANT",               // 3
+            "TYPE_DEVICE_LOCKED",           // 4
+            "TYPE_ACCESSIBILITY",           // 5
+            "TYPE_SCREEN_PINNED",           // 6
+            "TYPE_OVERVIEW_WITHOUT_FOCUS",  // 7
+            "TYPE_RESET_GESTURE",           // 8
+            "TYPE_PROGRESS_DELEGATE",       // 9
+            "TYPE_SYSUI_OVERLAY",           // 10
+            "TYPE_ONE_HANDED",              // 11
+            "TYPE_TASKBAR_STASH",           // 12
+            "TYPE_STATUS_BAR",              // 13
+            "TYPE_CURSOR_HOVER",            // 14
+            "TYPE_NAV_HANDLE_LONG_PRESS",   // 15
+            "TYPE_BUBBLE_BAR",              // 16
     };
 
     InputConsumer NO_OP = () -> TYPE_NO_OP;

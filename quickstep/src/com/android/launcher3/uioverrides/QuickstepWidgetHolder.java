@@ -17,7 +17,6 @@ package com.android.launcher3.uioverrides;
 
 import static com.android.launcher3.BuildConfigs.WIDGETS_ENABLED;
 import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
-import static com.android.launcher3.util.Executors.UI_HELPER_EXECUTOR;
 
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
@@ -100,7 +99,7 @@ public class QuickstepWidgetHolder extends LauncherWidgetHolder {
                                     // for concurrent modification.
                                     new ArrayList<>(h.mProviderChangedListeners).forEach(
                                     ProviderChangedListener::notifyWidgetProvidersChanged))),
-                    UI_HELPER_EXECUTOR.getLooper());
+                    getWidgetHolderExecutor().getLooper());
             if (WIDGETS_ENABLED) {
                 sWidgetHost.startListening();
             }
@@ -199,12 +198,10 @@ public class QuickstepWidgetHolder extends LauncherWidgetHolder {
             return;
         }
 
-        try {
+        getWidgetHolderExecutor().execute(() -> {
             sWidgetHost.setAppWidgetHidden();
-        } catch (Throwable t) {
-            // Ignore
-        }
-        setListeningFlag(false);
+            setListeningFlag(false);
+        });
     }
 
     @Override

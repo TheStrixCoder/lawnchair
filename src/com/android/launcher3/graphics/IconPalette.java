@@ -21,11 +21,7 @@ import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
 import android.app.Notification;
 import android.content.Context;
 import android.graphics.Color;
-import android.util.Log;
 
-import androidx.core.graphics.ColorUtils;
-
-import com.android.launcher3.R;
 import com.android.launcher3.util.Themes;
 
 import java.lang.IllegalArgumentException;
@@ -34,8 +30,6 @@ import java.lang.IllegalArgumentException;
  * Contains colors based on the dominant color of an icon.
  */
 public class IconPalette {
-
-    private static final boolean DEBUG = false;
     private static final String TAG = "IconPalette";
 
     private static final float MIN_PRELOAD_COLOR_SATURATION = 0.2f;

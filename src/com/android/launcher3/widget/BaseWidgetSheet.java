@@ -20,6 +20,7 @@ import static com.android.launcher3.Flags.enableWidgetTapToAdd;
 import static com.android.launcher3.LauncherState.NORMAL;
 import static com.android.launcher3.anim.AnimatorListeners.forSuccessCallback;
 import static com.android.launcher3.logging.StatsLogManager.LauncherEvent.LAUNCHER_WIDGET_ADD_BUTTON_TAP;
+import static com.android.window.flags.Flags.predictiveBackThreeButtonNav;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -46,7 +47,6 @@ import com.android.launcher3.PendingAddItemInfo;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.model.WidgetItem;
-import com.android.launcher3.popup.PopupDataProvider;
 import com.android.launcher3.testing.TestLogging;
 import com.android.launcher3.testing.shared.TestProtocol;
 import com.android.launcher3.touch.ItemLongClickListener;
@@ -54,6 +54,7 @@ import com.android.launcher3.util.SystemUiController;
 import com.android.launcher3.util.Themes;
 import com.android.launcher3.util.window.WindowManagerProxy;
 import com.android.launcher3.views.AbstractSlideInView;
+import com.android.launcher3.widget.picker.model.WidgetPickerDataProvider.WidgetPickerDataChangeListener;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -64,7 +65,7 @@ import app.lawnchair.theme.color.tokens.ColorTokens;
  */
 public abstract class BaseWidgetSheet extends AbstractSlideInView<BaseActivity>
         implements OnClickListener, OnLongClickListener,
-        PopupDataProvider.PopupDataChangeListener, Insettable, OnDeviceProfileChangeListener {
+        WidgetPickerDataChangeListener, Insettable, OnDeviceProfileChangeListener {
     /** The default number of cells that can fit horizontally in a widget sheet. */
     public static final int DEFAULT_MAX_HORIZONTAL_SPANS = 4;
 
@@ -113,14 +114,14 @@ public abstract class BaseWidgetSheet extends AbstractSlideInView<BaseActivity>
         WindowInsets windowInsets = WindowManagerProxy.INSTANCE.get(getContext())
                 .normalizeWindowInsets(getContext(), getRootWindowInsets(), new Rect());
         mNavBarScrimHeight = getNavBarScrimHeight(windowInsets);
-        mActivityContext.getPopupDataProvider().setChangeListener(this);
+        mActivityContext.getWidgetPickerDataProvider().setChangeListener(this);
         mActivityContext.addOnDeviceProfileChangeListener(this);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
-        mActivityContext.getPopupDataProvider().setChangeListener(null);
+        mActivityContext.getWidgetPickerDataProvider().setChangeListener(null);
         mActivityContext.removeOnDeviceProfileChangeListener(this);
     }
 
@@ -132,6 +133,17 @@ public abstract class BaseWidgetSheet extends AbstractSlideInView<BaseActivity>
             invalidate();
         }
         setupNavBarColor();
+    }
+
+    @Override
+    public void setScaleY(float scaleY) {
+        super.setScaleY(scaleY);
+        if (predictiveBackThreeButtonNav() && mNavBarScrimHeight > 0) {
+            // Call invalidate to prevent navbar scrim from scaling. The navbar scrim is drawn
+            // directly onto the canvas. To prevent it from being scaled with the canvas, there's a
+            // counter scale applied in dispatchDraw.
+            invalidate();
+        }
     }
 
     @Override
@@ -335,8 +347,10 @@ public abstract class BaseWidgetSheet extends AbstractSlideInView<BaseActivity>
         super.dispatchDraw(canvas);
 
         if (mNavBarScrimHeight > 0) {
-            canvas.drawRect(0, getHeight() - mNavBarScrimHeight, getWidth(), getHeight(),
-                    mNavBarScrimPaint);
+            float left = (getWidth() - getWidth() / getScaleX()) / 2;
+            float top = getHeight() / 2f + (getHeight() / 2f - mNavBarScrimHeight) / getScaleY();
+            canvas.drawRect(left, top, getWidth() / getScaleX(),
+                    top + mNavBarScrimHeight / getScaleY(), mNavBarScrimPaint);
         }
     }
 
@@ -349,8 +363,21 @@ public abstract class BaseWidgetSheet extends AbstractSlideInView<BaseActivity>
      * status bar, into account.
      */
     protected void doMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int widthUsed = getInsetsWidth();
+
         DeviceProfile deviceProfile = mActivityContext.getDeviceProfile();
+        measureChildWithMargins(mContent, widthMeasureSpec,
+                widthUsed, heightMeasureSpec, deviceProfile.bottomSheetTopPadding);
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec),
+                MeasureSpec.getSize(heightMeasureSpec));
+    }
+
+    /**
+     * Returns the width used on left and right by the insets / padding.
+     */
+    protected int getInsetsWidth() {
         int widthUsed;
+        DeviceProfile deviceProfile = mActivityContext.getDeviceProfile();
         if (deviceProfile.isTablet) {
             widthUsed = Math.max(2 * getTabletHorizontalMargin(deviceProfile),
                     2 * (mInsets.left + mInsets.right));
@@ -361,11 +388,7 @@ public abstract class BaseWidgetSheet extends AbstractSlideInView<BaseActivity>
             widthUsed = Math.max(padding.left + padding.right,
                     2 * (mInsets.left + mInsets.right));
         }
-
-        measureChildWithMargins(mContent, widthMeasureSpec,
-                widthUsed, heightMeasureSpec, deviceProfile.bottomSheetTopPadding);
-        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec),
-                MeasureSpec.getSize(heightMeasureSpec));
+        return widthUsed;
     }
 
     /** Returns the horizontal margins to be applied to the widget sheet. **/

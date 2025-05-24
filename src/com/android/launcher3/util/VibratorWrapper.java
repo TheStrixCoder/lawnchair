@@ -20,74 +20,73 @@ import static android.os.VibrationEffect.createOneShot;
 import static android.os.VibrationEffect.createPredefined;
 import static android.provider.Settings.System.HAPTIC_FEEDBACK_ENABLED;
 
+import static com.android.launcher3.util.Executors.MAIN_EXECUTOR;
 import static com.android.launcher3.util.Executors.UI_HELPER_EXECUTOR;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.net.Uri;
-import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
-import com.android.launcher3.Utilities;
+import com.android.launcher3.dagger.ApplicationContext;
+import com.android.launcher3.dagger.LauncherAppSingleton;
+import com.android.launcher3.dagger.LauncherBaseAppComponent;
+
+import javax.inject.Inject;
 
 /**
  * Wrapper around {@link Vibrator} to easily perform haptic feedback where
  * necessary.
  */
-public class VibratorWrapper implements SafeCloseable {
+@LauncherAppSingleton
+public class VibratorWrapper {
 
-    public static final MainThreadInitializedObject<VibratorWrapper> INSTANCE = new MainThreadInitializedObject<>(
-            VibratorWrapper::new);
+    public static final DaggerSingletonObject<VibratorWrapper> INSTANCE =
+            new DaggerSingletonObject<>(LauncherBaseAppComponent::getVibratorWrapper);
 
     public static final AudioAttributes VIBRATION_ATTRS = new AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
             .build();
 
-    public static final VibrationEffect EFFECT_CLICK = Utilities.ATLEAST_Q ? createPredefined(VibrationEffect.EFFECT_CLICK) : createOneShot(1000L, VibrationEffect.DEFAULT_AMPLITUDE);
-    private static final Uri HAPTIC_FEEDBACK_URI = Settings.System.getUriFor(HAPTIC_FEEDBACK_ENABLED);
+    public static final VibrationEffect EFFECT_CLICK =
+            createPredefined(VibrationEffect.EFFECT_CLICK);
+    @VisibleForTesting
+    static final Uri HAPTIC_FEEDBACK_URI = Settings.System.getUriFor(HAPTIC_FEEDBACK_ENABLED);
 
-    private static final float LOW_TICK_SCALE = 0.9f;
-    private static final float DRAG_TEXTURE_SCALE = 0.03f;
-    private static final float DRAG_COMMIT_SCALE = 0.5f;
-    private static final float DRAG_BUMP_SCALE = 0.4f;
-    private static final int DRAG_TEXTURE_EFFECT_SIZE = 200;
-
-    @Nullable
-    private final VibrationEffect mDragEffect;
-    @Nullable
-    private final VibrationEffect mCommitEffect;
-    @Nullable
-    private final VibrationEffect mBumpEffect;
-
-    private long mLastDragTime;
-    private final int mThresholdUntilNextDragCallMillis;
+    @VisibleForTesting static final float LOW_TICK_SCALE = 0.9f;
 
     /**
      * Haptic when entering overview.
      */
     public static final VibrationEffect OVERVIEW_HAPTIC = EFFECT_CLICK;
 
-    private final Context mContext;
     private final Vibrator mVibrator;
     private final boolean mHasVibrator;
-    private final SettingsCache.OnChangeListener mHapticChangeListener = isEnabled -> mIsHapticFeedbackEnabled = isEnabled;
+
+    @VisibleForTesting
+    final SettingsCache.OnChangeListener mHapticChangeListener =
+            isEnabled -> mIsHapticFeedbackEnabled = isEnabled;
 
     private boolean mIsHapticFeedbackEnabled;
 
-    private VibratorWrapper(Context context) {
-        mContext = context;
+    @Inject
+    public VibratorWrapper(@ApplicationContext Context context, SettingsCache settingsCache,
+            DaggerSingletonTracker tracker) {
+
         mVibrator = context.getSystemService(Vibrator.class);
         mHasVibrator = mVibrator.hasVibrator();
         if (mHasVibrator) {
-            SettingsCache cache = SettingsCache.INSTANCE.get(mContext);
-            cache.register(HAPTIC_FEEDBACK_URI, mHapticChangeListener);
-            mIsHapticFeedbackEnabled = cache.getValue(HAPTIC_FEEDBACK_URI, 0);
+            MAIN_EXECUTOR.execute(
+                    () -> settingsCache.register(HAPTIC_FEEDBACK_URI, mHapticChangeListener));
+            mIsHapticFeedbackEnabled = settingsCache.getValue(HAPTIC_FEEDBACK_URI, 0);
+            tracker.addCloseable(
+                    () -> settingsCache.unregister(HAPTIC_FEEDBACK_URI, mHapticChangeListener));
         } else {
             mIsHapticFeedbackEnabled = false;
         }
@@ -116,14 +115,6 @@ public class VibratorWrapper implements SafeCloseable {
             mCommitEffect = null;
             mBumpEffect = null;
             mThresholdUntilNextDragCallMillis = 0;
-        }
-    }
-
-    @Override
-    public void close() {
-        if (mHasVibrator) {
-            SettingsCache.INSTANCE.get(mContext)
-                    .unregister(HAPTIC_FEEDBACK_URI, mHapticChangeListener);
         }
     }
 
@@ -179,9 +170,6 @@ public class VibratorWrapper implements SafeCloseable {
      */
     public void cancelVibrate() {
         UI_HELPER_EXECUTOR.execute(mVibrator::cancel);
-        // reset dragTexture timestamp to be able to play dragTexture again whenever
-        // cancelled
-        mLastDragTime = 0;
     }
 
     /**
@@ -215,7 +203,7 @@ public class VibratorWrapper implements SafeCloseable {
 
     /** Indicates that Taskbar has been invoked. */
     public void vibrateForTaskbarUnstash() {
-        if (Utilities.ATLEAST_S && mVibrator.areAllPrimitivesSupported(PRIMITIVE_LOW_TICK)) {
+        if (mVibrator.areAllPrimitivesSupported(PRIMITIVE_LOW_TICK)) {
             VibrationEffect primitiveLowTickEffect = VibrationEffect
                     .startComposition()
                     .addPrimitive(PRIMITIVE_LOW_TICK, LOW_TICK_SCALE)

@@ -26,6 +26,7 @@ import static com.android.launcher3.allapps.UserProfileManager.STATE_DISABLED;
 import static com.android.launcher3.allapps.UserProfileManager.STATE_ENABLED;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -75,7 +76,8 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
     public static final int VIEW_TYPE_WORK_DISABLED_CARD = 1 << 5;
     public static final int VIEW_TYPE_PRIVATE_SPACE_HEADER = 1 << 6;
     public static final int VIEW_TYPE_PRIVATE_SPACE_SYS_APPS_DIVIDER = 1 << 7;
-    public static final int VIEW_TYPE_WORK_EDU_CARD = 1 << 8;
+    public static final int VIEW_TYPE_BOTTOM_VIEW_TO_SCROLL_TO = 1 << 8;
+    public static final int NEXT_ID = 9;
 
     public static final int VIEW_TYPE_FOLDER = 1 << 9;
 
@@ -270,12 +272,8 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
             case VIEW_TYPE_PRIVATE_SPACE_HEADER:
                 return new ViewHolder(mLayoutInflater.inflate(
                         R.layout.private_space_header, parent, false));
-            case VIEW_TYPE_FOLDER:
-                FrameLayout fl = new FrameLayout(mActivityContext);
-                ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
-                return new ViewHolder(fl);
+            case VIEW_TYPE_BOTTOM_VIEW_TO_SCROLL_TO:
+                return new ViewHolder(new View(mActivityContext));
             default:
                 if (mAdapterProvider.isViewSupported(viewType)) {
                     return mAdapterProvider.onCreateViewHolder(mLayoutInflater, parent, viewType);
@@ -306,8 +304,14 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                                 && (privateProfileManager.isScrolling() ||
                                         privateProfileManager.getReadyToAnimate())
                                 && privateProfileManager.getCurrentState() == STATE_ENABLED
-                                        ? 0
-                                        : 1);
+                                ? 0 : 1);
+                        Log.d(TAG, "onBindViewHolder: "
+                                + "isPrivateSpaceItem: " + isPrivateSpaceItem
+                        + " isStateTransitioning: " + privateProfileManager.isStateTransitioning()
+                        + " isScrolling: " + privateProfileManager.isScrolling()
+                        + " readyToAnimate: " + privateProfileManager.getReadyToAnimate()
+                        + " currentState: " + privateProfileManager.getCurrentState()
+                        + " currentAlpha: " + icon.getAlpha());
                     }
                     // Views can still be bounded before the app list is updated hence showing icons
                     // after collapsing.
@@ -345,6 +349,7 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                         : new SectionDecorationInfo(mActivityContext,
                                 ROUND_NOTHING, true /* decorateTogether */);
                 break;
+            case VIEW_TYPE_BOTTOM_VIEW_TO_SCROLL_TO:
             case VIEW_TYPE_ALL_APPS_DIVIDER:
             case VIEW_TYPE_WORK_DISABLED_CARD:
                 // nothing to do

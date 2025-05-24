@@ -21,22 +21,17 @@ import static com.android.launcher3.widget.LauncherWidgetHolder.APPWIDGET_HOST_I
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
-import android.view.accessibility.AccessibilityNodeInfo;
-import android.widget.RemoteViews;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.util.Executors;
-import com.android.launcher3.util.SafeCloseable;
 import com.android.launcher3.widget.LauncherWidgetHolder.ProviderChangedListener;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.function.IntConsumer;
 
 import app.lawnchair.LawnchairAppWidgetHostView;
@@ -83,6 +78,11 @@ class LauncherAppWidgetHost extends AppWidgetHost {
      */
     public void recycleViewForNextCreation(ListenableHostView viewToRecycle) {
         mViewToRecycle = viewToRecycle;
+    }
+
+    @VisibleForTesting
+    @Nullable ListenableHostView getViewToRecycle() {
+        return mViewToRecycle;
     }
 
     @Override

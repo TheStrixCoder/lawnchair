@@ -25,9 +25,9 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.app.animation.Interpolators;
 import com.android.launcher3.compat.AccessibilityManagerCompat;
 import com.android.launcher3.views.RecyclerViewFastScroller;
 import com.patrykmichalik.opto.core.PreferenceExtensionsKt;
@@ -63,9 +63,12 @@ public abstract class FastScrollRecyclerView extends RecyclerView {
         pref2 = PreferenceManager2.getInstance(context);
     }
 
-    public void bindFastScrollbar(RecyclerViewFastScroller scrollbar) {
+    public void bindFastScrollbar(RecyclerViewFastScroller scrollbar,
+            RecyclerViewFastScroller.FastScrollerLocation location) {
         mScrollbar = scrollbar;
         mScrollbar.setRecyclerView(this);
+        mScrollbar.setFastScrollerLocation(location);
+        scrollToTop();
         onUpdateScrollbar(0);
     }
 
@@ -201,8 +204,14 @@ public abstract class FastScrollRecyclerView extends RecyclerView {
     public abstract void onUpdateScrollbar(int dy);
 
     /**
-     * <p>
-     * Override in each subclass of this base class.
+     * Return the fast scroll letter list view in the A-Z list.
+     */
+    public ConstraintLayout getLetterList() {
+        return null;
+    }
+
+    /**
+     * <p>Override in each subclass of this base class.
      */
     public void onFastScrollCompleted() {
     }

@@ -77,7 +77,8 @@ public class UserCache implements SafeCloseable {
     }
 
     private final List<BiConsumer<UserHandle, String>> mUserEventListeners = new ArrayList<>();
-    private final SimpleBroadcastReceiver mUserChangeReceiver = new SimpleBroadcastReceiver(this::onUsersChanged);
+    private final SimpleBroadcastReceiver mUserChangeReceiver =
+            new SimpleBroadcastReceiver(MODEL_EXECUTOR, this::onUsersChanged);
 
     private final Context mContext;
 
@@ -183,6 +184,11 @@ public class UserCache implements SafeCloseable {
     @VisibleForTesting
     public void putToCache(UserHandle userHandle, UserIconInfo info) {
         mUserToSerialMap.put(userHandle, info);
+    }
+
+    @VisibleForTesting
+    public void putToPreInstallCache(UserHandle userHandle, List<String> preInstalledApps) {
+        mUserToPreInstallAppMap.put(userHandle, preInstalledApps);
     }
 
     /**

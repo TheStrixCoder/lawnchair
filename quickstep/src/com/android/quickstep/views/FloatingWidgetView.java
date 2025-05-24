@@ -18,6 +18,7 @@ package com.android.quickstep.views;
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
 import android.annotation.TargetApi;
+import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -122,10 +123,9 @@ public class FloatingWidgetView extends FrameLayout implements AnimatorListener,
 
     @Override
     public void onGlobalLayout() {
-        if (isUninitialized())
-            return;
-        positionViews();
-        if (mOnTargetChangeRunnable != null) {
+        if (isUninitialized()) return;
+        boolean positionsChanged = positionViews();
+        if (mOnTargetChangeRunnable != null && positionsChanged) {
             mOnTargetChangeRunnable.run();
         }
     }
@@ -220,23 +220,42 @@ public class FloatingWidgetView extends FrameLayout implements AnimatorListener,
     }
 
     /**
-     * Sets the layout parameters of the floating view and its background view
-     * child.
+     * Sets the layout parameters of the floating view and its background view child.
+     * @return true if any of the views positions change due to this call.
      */
-    private void positionViews() {
+    private boolean positionViews() {
+        boolean positionsChanged = false;
+
         LayoutParams layoutParams = (LayoutParams) getLayoutParams();
-        layoutParams.setMargins(0, 0, 0, 0);
-        setLayoutParams(layoutParams);
+
+        if (layoutParams.topMargin != 0 || layoutParams.bottomMargin != 0
+                || layoutParams.rightMargin != 0 || layoutParams.leftMargin != 0) {
+            positionsChanged = true;
+            layoutParams.setMargins(0, 0, 0, 0);
+            setLayoutParams(layoutParams);
+        }
 
         // FloatingWidgetView layout is forced LTR
-        mBackgroundView.setTranslationX(mBackgroundPosition.left);
-        mBackgroundView.setTranslationY(mBackgroundPosition.top + mIconOffsetY);
+        float targetY = mBackgroundPosition.top + mIconOffsetY;
+        if (mBackgroundView.getTranslationX() != mBackgroundPosition.left
+                || mBackgroundView.getTranslationY() != targetY) {
+            positionsChanged = true;
+            mBackgroundView.setTranslationX(mBackgroundPosition.left);
+            mBackgroundView.setTranslationY(targetY);
+        }
+
         LayoutParams backgroundParams = (LayoutParams) mBackgroundView.getLayoutParams();
-        backgroundParams.leftMargin = 0;
-        backgroundParams.topMargin = 0;
-        backgroundParams.width = (int) mBackgroundPosition.width();
-        backgroundParams.height = (int) mBackgroundPosition.height();
-        mBackgroundView.setLayoutParams(backgroundParams);
+        if (backgroundParams.leftMargin != 0 || backgroundParams.topMargin != 0
+                || backgroundParams.width != Math.round(mBackgroundPosition.width())
+                || backgroundParams.height != Math.round(mBackgroundPosition.height())) {
+            positionsChanged = true;
+
+            backgroundParams.leftMargin = 0;
+            backgroundParams.topMargin = 0;
+            backgroundParams.width = Math.round(mBackgroundPosition.width());
+            backgroundParams.height = Math.round(mBackgroundPosition.height());
+            mBackgroundView.setLayoutParams(backgroundParams);
+        }
 
         if (mForegroundOverlayView != null) {
             sTmpMatrix.reset();
@@ -246,8 +265,15 @@ public class FloatingWidgetView extends FrameLayout implements AnimatorListener,
             sTmpMatrix.postScale(foregroundScale, foregroundScale);
             sTmpMatrix.postTranslate(mBackgroundPosition.left, mBackgroundPosition.top
                     + mIconOffsetY);
-            mForegroundOverlayView.setMatrix(sTmpMatrix);
+
+            // We use the animation matrix here, because calling setMatrix on the GhostView
+            // actually sets the animation matrix, not the regular one.
+            if (!sTmpMatrix.equals(mForegroundOverlayView.getAnimationMatrix())) {
+                positionsChanged = true;
+                mForegroundOverlayView.setMatrix(sTmpMatrix);
+            }
         }
+        return positionsChanged;
     }
 
     private void finish(DragLayer dragLayer) {
@@ -316,11 +342,16 @@ public class FloatingWidgetView extends FrameLayout implements AnimatorListener,
      * context's theme background color.
      */
     public static int getDefaultBackgroundColor(
-            Context context, RemoteAnimationTarget target) {
-        return (target != null && target.taskInfo != null
-                && target.taskInfo.taskDescription != null)
-                ? target.taskInfo.taskDescription.getBackgroundColor()
-                : Themes.getColorBackground(context);
+            Context context, @Nullable RemoteAnimationTarget target) {
+        final int fallbackColor = Themes.getColorBackground(context);
+        if (target == null) {
+            return fallbackColor;
+        }
+        final TaskInfo taskInfo = target.taskInfo;
+        if (taskInfo == null) {
+            return fallbackColor;
+        }
+        return taskInfo.taskDescription.getBackgroundColor();
     }
 
     private static void getRelativePosition(View descendant, View ancestor, RectF position) {

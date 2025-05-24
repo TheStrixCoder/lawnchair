@@ -58,8 +58,7 @@ public interface LauncherOverlayManager extends Application.ActivityLifecycleCal
     @Override
     default void onActivityPaused(Activity activity) { }
 
-    @Override
-    default void onActivityStopped(Activity activity) { }
+    default void onDisallowSwipeToMinusOnePage() {}
 
     @Override
     default void onActivitySaveInstanceState(Activity activity, Bundle bundle) { }

@@ -25,13 +25,10 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -44,10 +41,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.launcher3.Flags;
 import com.android.launcher3.PendingAddItemInfo;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
+import com.android.launcher3.dagger.ApplicationContext;
+import com.android.launcher3.dagger.LauncherAppSingleton;
+import com.android.launcher3.dagger.LauncherBaseAppComponent;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
@@ -58,16 +57,19 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 
+import javax.inject.Inject;
+
 /**
  * Utility methods using package manager
  */
-public class PackageManagerHelper implements SafeCloseable {
+@LauncherAppSingleton
+public class PackageManagerHelper {
 
     private static final String TAG = "PackageManagerHelper";
 
     @NonNull
-    public static final MainThreadInitializedObject<PackageManagerHelper> INSTANCE = new MainThreadInitializedObject<>(
-            PackageManagerHelper::new);
+    public static DaggerSingletonObject<PackageManagerHelper> INSTANCE =
+            new DaggerSingletonObject<>(LauncherBaseAppComponent::getPackageManagerHelper);
 
     @NonNull
     private final Context mContext;
@@ -80,16 +82,13 @@ public class PackageManagerHelper implements SafeCloseable {
 
     private final String[] mLegacyMultiInstanceSupportedApps;
 
-    public PackageManagerHelper(@NonNull final Context context) {
+    @Inject
+    public PackageManagerHelper(@ApplicationContext final Context context) {
         mContext = context;
         mPm = context.getPackageManager();
         mLauncherApps = Objects.requireNonNull(context.getSystemService(LauncherApps.class));
         mLegacyMultiInstanceSupportedApps = mContext.getResources().getStringArray(
-                R.array.config_appsSupportMultiInstancesSplit);
-    }
-
-    @Override
-    public void close() {
+                    R.array.config_appsSupportMultiInstancesSplit);
     }
 
     /**
@@ -170,20 +169,6 @@ public class PackageManagerHelper implements SafeCloseable {
     }
 
     /**
-     * Returns the application info for the provided package or null
-     */
-    @Nullable
-    public ApplicationInfo getApplicationInfo(@NonNull final String packageName,
-            @NonNull final UserHandle user, final int flags) {
-        try {
-            ApplicationInfo info = mLauncherApps.getApplicationInfo(packageName, flags, user);
-            return !isPackageInstalledOrArchived(info) || !info.enabled ? null : info;
-        } catch (PackageManager.NameNotFoundException e) {
-            return null;
-        }
-    }
-
-    /**
      * Returns the preferred launch activity intent for a given package.
      */
     @Nullable
@@ -255,7 +240,7 @@ public class PackageManagerHelper implements SafeCloseable {
         if (info instanceof ItemInfoWithIcon appInfo
                 && (appInfo.runtimeStatusFlags & FLAG_INSTALL_SESSION_ACTIVE) != 0) {
             context.startActivity(ApiWrapper.INSTANCE.get(context).getAppMarketActivityIntent(
-                    appInfo.getTargetComponent().getPackageName(), Process.myUserHandle()));
+                    appInfo.getTargetComponent().getPackageName(), Process.myUserHandle()), opts);
             return;
         }
         ComponentName componentName = null;
@@ -355,10 +340,7 @@ public class PackageManagerHelper implements SafeCloseable {
 
     /** Returns the incremental download progress for the given shortcut's app. */
     public static int getLoadingProgress(LauncherActivityInfo info) {
-        if (Utilities.ATLEAST_S) {
-            return (int) (100 * info.getLoadingProgress());
-        }
-        return 100;
+        return (int) (100 * info.getLoadingProgress());
     }
 
     /** Returns true in case app is installed on the device or in archived state. */

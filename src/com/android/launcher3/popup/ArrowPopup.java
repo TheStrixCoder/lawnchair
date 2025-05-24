@@ -135,7 +135,7 @@ public abstract class ArrowPopup<T extends Context & ActivityContext>
 
     private final String mIterateChildrenTag;
 
-    public final int[] mColors;
+    protected final int[] mColors;
 
     public ArrowPopup(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -150,6 +150,7 @@ public abstract class ArrowPopup<T extends Context & ActivityContext>
 
         // Initialize arrow view
         final Resources resources = getResources();
+        mArrowColor = getContext().getColor(R.color.materialColorSurfaceContainer);
         mChildContainerMargin = resources.getDimensionPixelSize(R.dimen.popup_margin);
         mArrowWidth = resources.getDimensionPixelSize(R.dimen.popup_arrow_width);
         mArrowHeight = resources.getDimensionPixelSize(R.dimen.popup_arrow_height);
@@ -163,23 +164,24 @@ public abstract class ArrowPopup<T extends Context & ActivityContext>
         int smallerRadius = resources.getDimensionPixelSize(R.dimen.popup_smaller_radius);
         mRoundedTop = new GradientDrawable();
         mRoundedTop.setColor(popupPrimaryColor);
-        mRoundedTop.setCornerRadii(new float[] { mOutlineRadius, mOutlineRadius, mOutlineRadius,
-                mOutlineRadius, smallerRadius, smallerRadius, smallerRadius, smallerRadius });
+        mRoundedTop.setCornerRadii(new float[]{mOutlineRadius, mOutlineRadius, mOutlineRadius,
+                mOutlineRadius, smallerRadius, smallerRadius, smallerRadius, smallerRadius});
 
         mRoundedBottom = new GradientDrawable();
         mRoundedBottom.setColor(popupPrimaryColor);
-        mRoundedBottom.setCornerRadii(new float[] { smallerRadius, smallerRadius, smallerRadius,
-                smallerRadius, mOutlineRadius, mOutlineRadius, mOutlineRadius, mOutlineRadius });
+        mRoundedBottom.setCornerRadii(new float[]{smallerRadius, smallerRadius, smallerRadius,
+                smallerRadius, mOutlineRadius, mOutlineRadius, mOutlineRadius, mOutlineRadius});
 
         mIterateChildrenTag = getContext().getString(R.string.popup_container_iterate_children);
 
-        if (!FeatureFlags.showMaterialUPopup(getContext()) && mActivityContext.canUseMultipleShadesForPopup()) {
-            mColors = new int[] {
-                    ColorTokens.PopupShadeFirst.resolveColor(context),
-                    ColorTokens.PopupShadeSecond.resolveColor(context),
-                    ColorTokens.PopupShadeThird.resolveColor(context) };
+        if (mActivityContext.canUseMultipleShadesForPopup()) {
+            mColors = new int[]{
+                    getContext().getColor(R.color.popup_shade_first),
+                    getContext().getColor(R.color.popup_shade_second),
+                    getContext().getColor(R.color.popup_shade_third)
+            };
         } else {
-            mColors = new int[]{ ColorTokens.PopupShadeFirst.resolveColor(context)};
+            mColors = new int[]{getContext().getColor(R.color.materialColorSurfaceContainer)};
         }
     }
 
@@ -226,8 +228,7 @@ public abstract class ArrowPopup<T extends Context & ActivityContext>
     }
 
     /**
-     * @param backgroundColor When Color.TRANSPARENT, we get color from
-     *                        {@link #mColors}.
+     * @param backgroundColor When Color.TRANSPARENT, we get color from {@link #mColors}.
      *                        Otherwise, we will use this color for all child views.
      */
     protected void assignMarginsAndBackgrounds(ViewGroup viewGroup, int backgroundColor) {

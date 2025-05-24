@@ -29,8 +29,9 @@ import androidx.dynamicanimation.animation.DynamicAnimation;
 import androidx.dynamicanimation.animation.FloatPropertyCompat;
 
 import com.android.launcher3.R;
-import com.android.wm.shell.common.bubbles.DismissCircleView;
-import com.android.wm.shell.common.bubbles.DismissView;
+import com.android.wm.shell.shared.bubbles.DismissCircleView;
+import com.android.wm.shell.shared.bubbles.DismissView;
+import com.android.wm.shell.shared.animation.PhysicsAnimator;
 
 import app.lawnchair.animation.PhysicsAnimator;
 
@@ -131,7 +132,7 @@ public class BubbleDragAnimator {
                         boolean wasFling, boolean canceled, float finalValue, float finalVelocity,
                         boolean allRelevantPropertyAnimationsEnded) -> {
                     if (canceled || allRelevantPropertyAnimationsEnded) {
-                        resetAnimatedViews(restingPosition);
+                        resetAnimatedViews(restingPosition, /* dismissed= */ false);
                         if (endActions != null) {
                             endActions.run();
                         }
@@ -205,9 +206,8 @@ public class BubbleDragAnimator {
                         boolean wasFling, boolean canceled, float finalValue, float finalVelocity,
                         boolean allRelevantPropertyAnimationsEnded) -> {
                     if (canceled || allRelevantPropertyAnimationsEnded) {
-                        resetAnimatedViews(initialPosition);
-                        if (endActions != null)
-                            endActions.run();
+                        resetAnimatedViews(initialPosition, /* dismissed= */ true);
+                        if (endActions != null) endActions.run();
                     }
                 })
                 .start();
@@ -217,11 +217,14 @@ public class BubbleDragAnimator {
      * Reset the animated views to the initial state
      *
      * @param initialPosition position of the bubble
+     * @param dismissed whether the animated view was dismissed
      */
-    private void resetAnimatedViews(@NonNull PointF initialPosition) {
+    private void resetAnimatedViews(@NonNull PointF initialPosition, boolean dismissed) {
         mView.setScaleX(1f);
         mView.setScaleY(1f);
-        mView.setAlpha(1f);
+        if (!dismissed) {
+            mView.setAlpha(1f);
+        }
         mView.setTranslationX(initialPosition.x);
         mView.setTranslationY(initialPosition.y);
 

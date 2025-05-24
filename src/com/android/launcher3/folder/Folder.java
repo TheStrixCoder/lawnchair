@@ -227,7 +227,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
 
     @Thunk
     FolderPagedView mContent;
-    FolderNameEditText mFolderName;
+    private FolderNameEditText mFolderName;
     private PageIndicatorDots mPageIndicator;
 
     protected View mFooter;
@@ -333,24 +333,10 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
                 | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
                 | InputType.TYPE_TEXT_FLAG_CAP_WORDS);
         mFolderName.forceDisableSuggestions(true);
-        mFolderName.setPadding(mFolderName.getPaddingLeft(),
-                (getFooterHeight() - mFolderName.getLineHeight()) / 2,
-                mFolderName.getPaddingRight(),
-                (getFooterHeight() - mFolderName.getLineHeight()) / 2);
 
-        @ColorInt
-        int accentColor = Themes.getColorAccent(mFolderName.getContext());
-        EditTextExtensions.setCursorColor(mFolderName, accentColor);
-        EditTextExtensions.setTextSelectHandleColor(mFolderName, accentColor);
 
-        if (Utilities.ATLEAST_O) {
-            mFolderName.setHighlightColor(ColorUtils.setAlphaComponent(accentColor, 82));
-        }
-
-        if (Utilities.ATLEAST_R) {
-            mKeyboardInsetAnimationCallback = new KeyboardInsetAnimationCallback(this);
-            setWindowInsetsAnimationCallback(mKeyboardInsetAnimationCallback);
-        }
+        mKeyboardInsetAnimationCallback = new KeyboardInsetAnimationCallback(this);
+        setWindowInsetsAnimationCallback(mKeyboardInsetAnimationCallback);
     }
 
     public boolean onLongClick(View v) {
@@ -389,7 +375,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
                 mContent, FolderAccessibilityHelper::new) {
             @Override
             protected void enableAccessibleDrag(boolean enable,
-                                                @Nullable DragObject dragObject) {
+                    @Nullable DragObject dragObject) {
                 super.enableAccessibleDrag(enable, dragObject);
                 mFooter.setImportantForAccessibility(enable
                         ? IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
@@ -403,8 +389,6 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
         if (dragObject.dragSource != this) {
             return;
         }
-        if (isInAppDrawer()) close(true);
-        
         mContent.removeItem(mCurrentDragView);
         mItemsInvalidated = true;
 
@@ -977,7 +961,7 @@ public class Folder extends AbstractFloatingView implements ClipPathView, DragSo
             mRearrangeOnClose = false;
         }
         if (getItemCount() <= 1) {
-            if (!mIsDragInProgress && !mSuppressFolderDeletion && !isInAppDrawer()) {
+            if (!mIsDragInProgress && !mSuppressFolderDeletion) {
                 replaceFolderWithFinalItem();
             } else if (mIsDragInProgress) {
                 mDeleteFolderOnDropCompleted = true;

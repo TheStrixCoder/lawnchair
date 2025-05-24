@@ -41,6 +41,7 @@ import com.android.launcher3.model.data.WorkspaceItemFactory;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.pm.InstallSessionHelper;
 import com.android.launcher3.pm.PackageInstallInfo;
+import com.android.launcher3.util.ApplicationInfoWrapper;
 import com.android.launcher3.util.IntArray;
 import com.android.launcher3.util.PackageManagerHelper;
 
@@ -98,6 +99,12 @@ public class AddWorkspaceItemsTask implements ModelUpdateTask {
                 if (item.itemType == LauncherSettings.Favorites.ITEM_TYPE_APPLICATION) {
                     // Short-circuit this logic if the icon exists somewhere on the workspace
                     if (shortcutExists(dataModel, item.getIntent(), item.user)) {
+                        continue;
+                    }
+
+                    // b/139663018 Short-circuit this logic if the icon is a system app
+                    if (new ApplicationInfoWrapper(context,
+                            Objects.requireNonNull(item.getIntent())).isSystem()) {
                         continue;
                     }
 

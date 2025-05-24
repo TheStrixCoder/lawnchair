@@ -560,8 +560,19 @@ public class BgDataModel {
         /**
          * Binds updated incremental download progress
          */
-        default void bindIncrementalDownloadProgressUpdated(AppInfo app) {
+        default void bindIncrementalDownloadProgressUpdated(AppInfo app) { }
+        default void bindWorkspaceItemsChanged(List<WorkspaceItemInfo> updated) { }
+        default void bindWidgetsRestored(ArrayList<LauncherAppWidgetInfo> widgets) { }
+        default void bindRestoreItemsChange(HashSet<ItemInfo> updates) { }
+        default void bindWorkspaceComponentsRemoved(Predicate<ItemInfo> matcher) { }
+
+        /**
+         * Binds the app widgets to the providers that share widgets with the UI.
+         */
+        default void bindAllWidgets(@NonNull List<WidgetsListBaseEntry> widgets,
+                @NonNull List<WidgetsListBaseEntry> defaultWidgets) {
         }
+        default void bindSmartspaceWidget() { }
 
         default void bindWorkspaceItemsChanged(List<WorkspaceItemInfo> updated) {
         }

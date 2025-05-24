@@ -25,7 +25,7 @@ import android.view.ThreadedRenderer;
 
 import com.android.launcher3.BuildConfig;
 import com.android.launcher3.MainProcessInitializer;
-import com.android.launcher3.Utilities;
+import com.android.quickstep.util.QuickstepProtoLogGroup;
 import com.android.systemui.shared.system.InteractionJankMonitorWrapper;
 
 @SuppressWarnings("unused")
@@ -60,13 +60,16 @@ public class QuickstepProcessInitializer extends MainProcessInitializer {
 
                 super.init(context);
 
-                // Elevate GPU priority for Quickstep and Remote animations.
-                try {
-                        if (!Utilities.ATLEAST_Q) return;
-                        ThreadedRenderer.setContextPriority(
-                                        ThreadedRenderer.EGL_CONTEXT_PRIORITY_HIGH_IMG);
-                } catch (Exception e) {
-                        Log.e(TAG, "init: " + e);
-                }
+        // Enable Looper trace points.
+        // This allows us to see Handler callbacks on traces.
+        Looper.getMainLooper().setTraceTag(Trace.TRACE_TAG_APP);
+
+        if (BuildConfig.IS_STUDIO_BUILD) {
+            BinderTracker.startTracking(call ->  Log.e("BinderCall",
+                    call.descriptor + " called on main thread under " + call.activeTrace
+                            + " stackTrace: " + call.stackTrace));
         }
+
+        QuickstepProtoLogGroup.initProtoLog();
+    }
 }

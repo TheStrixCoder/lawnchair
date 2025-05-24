@@ -46,16 +46,12 @@ private const val EXIT_DURATION_MS = 150L
 /** Floating tooltip for Taskbar education. */
 class TaskbarEduTooltip
 @JvmOverloads
-constructor(
-    context: Context,
-    attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0,
-) : AbstractFloatingView(context, attrs, defStyleAttr) {
+constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
+    AbstractFloatingView(context, attrs, defStyleAttr) {
 
     private val activityContext: ActivityContext = ActivityContext.lookupContext(context)
 
-    private val backgroundColor =
-        ColorTokens.SurfaceBrightColor.resolveColor(getContext())
+    private val backgroundColor = context.getColor(R.color.materialColorSurfaceBright)
 
     private val tooltipCornerRadius = Themes.getDialogCornerRadius(context)
     private val arrowWidth = resources.getDimension(R.dimen.popup_arrow_width)

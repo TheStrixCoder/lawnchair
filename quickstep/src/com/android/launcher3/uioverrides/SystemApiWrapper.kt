@@ -23,6 +23,7 @@ import android.content.IIntentReceiver
 import android.content.IIntentSender
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.content.pm.ApplicationInfo
 import android.content.pm.LauncherActivityInfo
 import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
@@ -42,15 +43,20 @@ import com.android.launcher3.Flags.privateSpaceAppInstallerButton
 import com.android.launcher3.Flags.privateSpaceSysAppsSeparation
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
+import com.android.launcher3.dagger.ApplicationContext
+import com.android.launcher3.dagger.LauncherAppSingleton
 import com.android.launcher3.proxy.ProxyActivityStarter
 import com.android.launcher3.util.ApiWrapper
 import com.android.launcher3.util.Executors
 import com.android.launcher3.util.StartActivityParams
 import com.android.launcher3.util.UserIconInfo
 import com.android.quickstep.util.FadeOutRemoteTransition
+import javax.inject.Inject
 
 /** A wrapper for the hidden API calls */
-open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
+@LauncherAppSingleton
+open class SystemApiWrapper @Inject constructor(@ApplicationContext context: Context?) :
+    ApiWrapper(context) {
 
     override fun getPersons(si: ShortcutInfo) = si.persons ?: Utilities.EMPTY_PERSON_ARRAY
 
@@ -62,13 +68,9 @@ open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
         }
     }
 
-    override fun createFadeOutAnimOptions(): ActivityOptions {
-        return try {
-            ActivityOptions.makeBasic().apply {
-                remoteTransition = RemoteTransition(FadeOutRemoteTransition())
-            }
-        } catch (t: Throwable) {
-            super.createFadeOutAnimOptions()
+    override fun createFadeOutAnimOptions(): ActivityOptions =
+        ActivityOptions.makeBasic().apply {
+            remoteTransition = RemoteTransition(FadeOutRemoteTransition(), "FadeOut")
         }
     }
 
@@ -77,22 +79,20 @@ open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
         if (!enablePrivateSpace() || !LawnchairApp.isRecentsEnabled) {
             return super.queryAllUsers()
         }
-        return try {
-            val users = ArrayMap<UserHandle, UserIconInfo>()
-            mContext.getSystemService(UserManager::class.java)!!.userProfiles?.forEach { user ->
-                mContext.getSystemService(LauncherApps::class.java)!!.getLauncherUserInfo(user)?.apply {
-                    users[user] =
-                        UserIconInfo(
-                            user,
-                            when (userType) {
-                                UserManager.USER_TYPE_PROFILE_MANAGED -> UserIconInfo.TYPE_WORK
-                                UserManager.USER_TYPE_PROFILE_CLONE -> UserIconInfo.TYPE_CLONED
-                                UserManager.USER_TYPE_PROFILE_PRIVATE -> UserIconInfo.TYPE_PRIVATE
-                                else -> UserIconInfo.TYPE_MAIN
-                            },
-                            userSerialNumber.toLong()
-                        )
-                }
+        val users = ArrayMap<UserHandle, UserIconInfo>()
+        mContext.getSystemService(UserManager::class.java)!!.userProfiles?.forEach { user ->
+            mContext.getSystemService(LauncherApps::class.java)!!.getLauncherUserInfo(user)?.apply {
+                users[user] =
+                    UserIconInfo(
+                        user,
+                        when (userType) {
+                            UserManager.USER_TYPE_PROFILE_MANAGED -> UserIconInfo.TYPE_WORK
+                            UserManager.USER_TYPE_PROFILE_CLONE -> UserIconInfo.TYPE_CLONED
+                            UserManager.USER_TYPE_PROFILE_PRIVATE -> UserIconInfo.TYPE_PRIVATE
+                            else -> UserIconInfo.TYPE_MAIN
+                        },
+                        userSerialNumber.toLong(),
+                    )
             }
             return users
         } catch (t : Throwable) {
@@ -118,6 +118,22 @@ open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
             if (
                 enablePrivateSpace() &&
                 (privateSpaceAppInstallerButton() || enablePrivateSpaceInstallShortcut())
+        )
+            ProxyActivityStarter.getLaunchIntent(
+                mContext,
+                StartActivityParams(null as PendingIntent?, 0).apply {
+                    intentSender =
+                        mContext
+                            .getSystemService(LauncherApps::class.java)!!
+                            .getAppMarketActivityIntent(packageName, user)
+                    options =
+                        ActivityOptions.makeBasic()
+                            .setPendingIntentBackgroundActivityStartMode(
+                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                            )
+                            .toBundle()
+                    requireActivityResult = false
+                },
             )
                 ProxyActivityStarter.getLaunchIntent(
                     mContext,
@@ -142,30 +158,25 @@ open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
     }
 
     /** Returns an intent which can be used to open Private Space Settings. */
-    override fun getPrivateSpaceSettingsIntent(): Intent? {
-        return try {
-            if (enablePrivateSpace())
-                ProxyActivityStarter.getLaunchIntent(
-                    mContext,
-                    StartActivityParams(null as PendingIntent?, 0).apply {
-                        intentSender =
-                            mContext
-                                .getSystemService(LauncherApps::class.java)
-                                ?.privateSpaceSettingsIntent ?: return null
-                        options =
-                            ActivityOptions.makeBasic()
-                                .setPendingIntentBackgroundActivityStartMode(
-                                    ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                                )
-                                .toBundle()
-                        requireActivityResult = false
-                    }
-                )
-            else null
-        } catch (t: Throwable) {
-            super.privateSpaceSettingsIntent
-        }
-    }
+    override fun getPrivateSpaceSettingsIntent(): Intent? =
+        if (allowPrivateProfile() && enablePrivateSpace())
+            ProxyActivityStarter.getLaunchIntent(
+                mContext,
+                StartActivityParams(null as PendingIntent?, 0).apply {
+                    intentSender =
+                        mContext
+                            .getSystemService(LauncherApps::class.java)
+                            ?.privateSpaceSettingsIntent ?: return null
+                    options =
+                        ActivityOptions.makeBasic()
+                            .setPendingIntentBackgroundActivityStartMode(
+                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
+                            )
+                            .toBundle()
+                    requireActivityResult = false
+                },
+            )
+        else null
 
     override fun isNonResizeableActivity(lai: LauncherActivityInfo): Boolean {
         return try {
@@ -181,34 +192,33 @@ open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
      * as HOME app, a toast asking the user to do the latter is shown.
      */
     override fun assignDefaultHomeRole(context: Context) {
-        try {
-            val roleManager = context.getSystemService(RoleManager::class.java)
-            if (
-                (roleManager!!.isRoleAvailable(RoleManager.ROLE_HOME) &&
-                        !roleManager.isRoleHeld(RoleManager.ROLE_HOME))
-            ) {
-                val roleRequestIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-                val pendingIntent =
-                    PendingIntent(
-                        object : IIntentSender.Stub() {
-                            override fun send(
-                                code: Int,
-                                intent: Intent,
-                                resolvedType: String?,
-                                allowlistToken: IBinder?,
-                                finishedReceiver: IIntentReceiver?,
-                                requiredPermission: String?,
-                                options: Bundle?
-                            ) {
-                                if (code != -1) {
-                                    Executors.MAIN_EXECUTOR.execute {
-                                        Toast.makeText(
+        val roleManager = context.getSystemService(RoleManager::class.java)
+        if (
+            (roleManager!!.isRoleAvailable(RoleManager.ROLE_HOME) &&
+                !roleManager.isRoleHeld(RoleManager.ROLE_HOME))
+        ) {
+            val roleRequestIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+            val pendingIntent =
+                PendingIntent(
+                    object : IIntentSender.Stub() {
+                        override fun send(
+                            code: Int,
+                            intent: Intent,
+                            resolvedType: String?,
+                            allowlistToken: IBinder?,
+                            finishedReceiver: IIntentReceiver?,
+                            requiredPermission: String?,
+                            options: Bundle?,
+                        ) {
+                            if (code != -1) {
+                                Executors.MAIN_EXECUTOR.execute {
+                                    Toast.makeText(
                                             context,
                                             context.getString(
                                                 R.string.set_default_home_app,
-                                                context.getString(R.string.derived_app_name)
+                                                context.getString(R.string.derived_app_name),
                                             ),
-                                            Toast.LENGTH_LONG
+                                            Toast.LENGTH_LONG,
                                         )
                                             .show()
                                     }
@@ -224,4 +234,7 @@ open class SystemApiWrapper(context: Context?) : ApiWrapper(context) {
             super.assignDefaultHomeRole(context)
         }
     }
+
+    override fun getApplicationInfoHash(appInfo: ApplicationInfo): String =
+        (appInfo.sourceDir?.hashCode() ?: 0).toString() + " " + appInfo.longVersionCode
 }

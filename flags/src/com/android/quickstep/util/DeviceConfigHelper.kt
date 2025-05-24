@@ -21,18 +21,22 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import androidx.annotation.WorkerThread
+import com.android.launcher3.BuildConfig
+import com.android.launcher3.util.Executors
+import java.util.concurrent.CopyOnWriteArrayList
 
 /** Utility class to manage a set of device configurations */
 class DeviceConfigHelper<ConfigType>(private val factory: (PropReader) -> ConfigType) {
 
     var config: ConfigType
         private set
+
     private val allKeys: Set<String>
     private val sharedPrefChangeListener = OnSharedPreferenceChangeListener { _, _ ->
         recreateConfig()
     }
 
-    private val changeListeners = mutableListOf<Runnable>()
+    private val changeListeners = CopyOnWriteArrayList<Runnable>()
 
     init {
         // Initialize the default config once.

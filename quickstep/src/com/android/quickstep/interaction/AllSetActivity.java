@@ -62,6 +62,7 @@ import androidx.core.graphics.ColorUtils;
 
 import com.android.launcher3.DeviceProfile;
 import com.android.launcher3.InvariantDeviceProfile;
+import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.anim.AnimatedFloat;
@@ -69,6 +70,8 @@ import com.android.launcher3.anim.AnimatorPlaybackController;
 import com.android.launcher3.taskbar.TaskbarManager;
 import com.android.launcher3.util.Executors;
 import com.android.quickstep.GestureState;
+import com.android.quickstep.OverviewComponentObserver;
+import com.android.quickstep.OverviewComponentObserver.OverviewChangeListener;
 import com.android.quickstep.TouchInteractionService.TISBinder;
 import com.android.quickstep.util.LottieAnimationColorUtils;
 import com.android.quickstep.util.TISBindHelper;
@@ -103,6 +106,9 @@ public class AllSetActivity extends Activity {
 
     private final AnimatedFloat mSwipeProgress = new AnimatedFloat(this::onSwipeProgressUpdate);
 
+    private final InvariantDeviceProfile.OnIDPChangeListener mOnIDPChangeListener =
+            modelPropertiesChanged -> updateHint();
+
     private TISBindHelper mTISBindHelper;
 
     private BgDrawable mBackground;
@@ -115,6 +121,10 @@ public class AllSetActivity extends Activity {
     private Animator.AnimatorListener mBackgroundAnimatorListener;
 
     private AnimatorPlaybackController mLauncherStartAnim = null;
+
+    private TextView mHintView;
+
+    private final OverviewChangeListener mOverviewChangeListener = this::onOverviewTargetChange;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -169,12 +179,9 @@ public class AllSetActivity extends Activity {
             }
         });
 
-        TextView hint = findViewById(R.id.hint);
-        DeviceProfile dp = InvariantDeviceProfile.INSTANCE.get(this).getDeviceProfile(this);
-        if (!dp.isGestureMode) {
-            hint.setText(R.string.allset_button_hint);
-        }
-        hint.setAccessibilityDelegate(new SkipButtonAccessibilityDelegate());
+        mHintView = findViewById(R.id.hint);
+        mHintView.setAccessibilityDelegate(new SkipButtonAccessibilityDelegate());
+        updateHint();
 
         mTISBindHelper = new TISBindHelper(this, this::onTISConnected);
 
@@ -194,7 +201,24 @@ public class AllSetActivity extends Activity {
                         LOTTIE_TERTIARY_COLOR_TOKEN, R.color.all_set_bg_tertiary),
                 getTheme());
 
-        startBackgroundAnimation(dp.isTablet);
+        setUpBackgroundAnimation(getDP().isTablet);
+        getIDP().addOnChangeListener(mOnIDPChangeListener);
+
+        OverviewComponentObserver.INSTANCE.get(this)
+                .addOverviewChangeListener(mOverviewChangeListener);
+    }
+
+    private InvariantDeviceProfile getIDP() {
+        return LauncherAppState.getInstance(this).getInvariantDeviceProfile();
+    }
+
+    private DeviceProfile getDP() {
+        return getIDP().getDeviceProfile(this);
+    }
+
+    private void updateHint() {
+        mHintView.setText(
+                getDP().isGestureMode ? R.string.allset_hint : R.string.allset_button_hint);
     }
 
     private void runOnUiHelperThread(Runnable runnable) {
@@ -205,8 +229,8 @@ public class AllSetActivity extends Activity {
         Executors.UI_HELPER_EXECUTOR.execute(runnable);
     }
 
-    private void startBackgroundAnimation(boolean forTablet) {
-        if (!Utilities.ATLEAST_S || mVibrator == null) {
+    private void setUpBackgroundAnimation(boolean forTablet) {
+        if (mVibrator == null) {
             return;
         }
         boolean supportsThud = mVibrator.areAllPrimitivesSupported(
@@ -248,7 +272,6 @@ public class AllSetActivity extends Activity {
             };
         }
         mAnimatedBackground.addAnimatorListener(mBackgroundAnimatorListener);
-        mAnimatedBackground.playAnimation();
     }
 
     private void setSetupUIVisible(boolean visible) {
@@ -272,11 +295,17 @@ public class AllSetActivity extends Activity {
     private void onTISConnected(TISBinder binder) {
         setSetupUIVisible(isResumed());
         binder.setSwipeUpProxy(isResumed() ? this::createSwipeUpProxy : null);
-        binder.setOverviewTargetChangeListener(binder::preloadOverviewForSUWAllSet);
         binder.preloadOverviewForSUWAllSet();
         TaskbarManager taskbarManager = binder.getTaskbarManager();
         if (taskbarManager != null) {
             mLauncherStartAnim = taskbarManager.createLauncherStartFromSuwAnim(MAX_SWIPE_DURATION);
+        }
+    }
+
+    private void onOverviewTargetChange(boolean isHomeAndOverviewSame) {
+        TISBinder binder = mTISBindHelper.getBinder();
+        if (binder != null) {
+            binder.preloadOverviewForSUWAllSet();
         }
     }
 
@@ -296,7 +325,6 @@ public class AllSetActivity extends Activity {
         if (binder != null) {
             setSetupUIVisible(false);
             binder.setSwipeUpProxy(null);
-            binder.setOverviewTargetChangeListener(null);
         }
     }
 
@@ -317,6 +345,7 @@ public class AllSetActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        getIDP().removeOnChangeListener(mOnIDPChangeListener);
         mTISBindHelper.onDestroy();
         clearBinderOverride();
         if (mBackgroundAnimatorListener != null) {
@@ -325,6 +354,8 @@ public class AllSetActivity extends Activity {
         if (!isChangingConfigurations()) {
             dispatchLauncherAnimStartEnd();
         }
+        OverviewComponentObserver.INSTANCE.get(this)
+                .removeOverviewChangeListener(mOverviewChangeListener);
     }
 
     private AnimatedFloat createSwipeUpProxy(GestureState state) {

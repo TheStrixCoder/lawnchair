@@ -86,7 +86,7 @@ import app.lawnchair.compat.LawnchairQuickstepCompat;
  * Handles the navigation gestures when a 3rd party launcher is the default home activity.
  */
 public class FallbackSwipeHandler extends
-        AbsSwipeUpHandler<RecentsActivity, FallbackRecentsView, RecentsState> {
+        AbsSwipeUpHandler<RecentsActivity, FallbackRecentsView<RecentsActivity>, RecentsState> {
 
     private static final String TAG = "FallbackSwipeHandler";
 
@@ -109,7 +109,7 @@ public class FallbackSwipeHandler extends
             TaskAnimationManager taskAnimationManager, GestureState gestureState, long touchTimeMs,
             boolean continuingLastGesture, InputConsumerController inputConsumer) {
         super(context, deviceState, taskAnimationManager, gestureState, touchTimeMs,
-                continuingLastGesture, inputConsumer);
+                continuingLastGesture, inputConsumer, null);
 
         mRunningOverHome = mGestureState.getRunningTask() != null
                 && mGestureState.getRunningTask().isHomeTask();
@@ -176,14 +176,14 @@ public class FallbackSwipeHandler extends
     }
 
     @Override
-    protected boolean handleTaskAppeared(RemoteAnimationTarget[] appearedTaskTarget) {
-        if (mActiveAnimationFactory != null
-                && mActiveAnimationFactory.handleHomeTaskAppeared(appearedTaskTarget)) {
+    public void onTasksAppeared(@NonNull RemoteAnimationTarget[] appearedTaskTargets) {
+        if (mActiveAnimationFactory != null && mActiveAnimationFactory.handleHomeTaskAppeared(
+                appearedTaskTargets)) {
             mActiveAnimationFactory = null;
-            return false;
+            return;
         }
 
-        return super.handleTaskAppeared(appearedTaskTarget);
+        super.onTasksAppeared(appearedTaskTargets);
     }
 
     @Override

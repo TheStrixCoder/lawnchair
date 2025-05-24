@@ -33,8 +33,8 @@ public class WallpaperOffsetInterpolator {
     // pages
     private static final int MIN_PARALLAX_PAGE_SPAN = 4;
 
-    private final SimpleBroadcastReceiver mWallpaperChangeReceiver = new SimpleBroadcastReceiver(
-            i -> onWallpaperChanged());
+    private final SimpleBroadcastReceiver mWallpaperChangeReceiver =
+            new SimpleBroadcastReceiver(UI_HELPER_EXECUTOR, i -> onWallpaperChanged());
     private final Workspace<?> mWorkspace;
     private final boolean mIsRtl;
     private final Handler mHandler;
@@ -222,7 +222,8 @@ public class WallpaperOffsetInterpolator {
             mWallpaperChangeReceiver.unregisterReceiverSafely(mWorkspace.getContext());
             mRegistered = false;
         } else if (mWindowToken != null && !mRegistered) {
-            mWallpaperChangeReceiver.register(mWorkspace.getContext(), ACTION_WALLPAPER_CHANGED);
+            mWallpaperChangeReceiver.register(
+                    mWorkspace.getContext(), ACTION_WALLPAPER_CHANGED);
             onWallpaperChanged();
             mRegistered = true;
         }

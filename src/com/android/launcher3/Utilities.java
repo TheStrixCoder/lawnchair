@@ -38,9 +38,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.ShortcutInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BlendMode;
-import android.graphics.BlendModeColorFilter;
 import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.LightingColorFilter;
@@ -51,10 +48,8 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.AdaptiveIconDrawable;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.InsetDrawable;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.DeadObjectException;
@@ -86,9 +81,8 @@ import androidx.core.graphics.ColorUtils;
 import com.android.launcher3.dragndrop.FolderAdaptiveIcon;
 import com.android.launcher3.graphics.TintedDrawableSpan;
 import com.android.launcher3.icons.BitmapInfo;
+import com.android.launcher3.icons.CacheableShortcutInfo;
 import com.android.launcher3.icons.LauncherIcons;
-import com.android.launcher3.icons.ShortcutCachingLogic;
-import com.android.launcher3.icons.ThemedIconDrawable;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.pm.ShortcutConfigActivityInfo;
@@ -110,8 +104,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import app.lawnchair.icons.ExtendedBitmapDrawable;
 import app.lawnchair.preferences.PreferenceManager;
@@ -123,6 +115,7 @@ public final class Utilities {
 
     private static final String TAG = "Launcher.Utilities";
 
+    private static final String TRIM_PATTERN = "(^\\h+|\\h+$)";
     private static final Pattern sTrimPattern = Pattern
             .compile("^[\\s|\\p{javaSpaceChar}]*(.*)[\\s|\\p{javaSpaceChar}]*$");
 
@@ -259,6 +252,11 @@ public final class Utilities {
 
     public static void enableRunningInTestHarnessForTests() {
         sIsRunningInTestHarness = true;
+    }
+
+    /** Disables running test in test harness mode */
+    public static void disableRunningInTestHarnessForTests() {
+        sIsRunningInTestHarness = false;
     }
 
     public static boolean isPropertyEnabled(String propertyName) {
@@ -498,6 +496,28 @@ public final class Utilities {
     }
 
     /**
+     * Scales a {@code RectF} in place about a specified pivot point.
+     *
+     * <p>This method modifies the given {@code RectF} directly to scale it proportionally
+     * by the given {@code scale}, while preserving its center at the specified
+     * {@code (pivotX, pivotY)} coordinates.
+     *
+     * @param rectF the {@code RectF} to scale, modified directly.
+     * @param pivotX the x-coordinate of the pivot point about which to scale.
+     * @param pivotY the y-coordinate of the pivot point about which to scale.
+     * @param scale the factor by which to scale the rectangle. Values less than 1 will
+     *                    shrink the rectangle, while values greater than 1 will enlarge it.
+     */
+    public static void scaleRectFAboutPivot(RectF rectF, float pivotX, float pivotY, float scale) {
+        rectF.offset(-pivotX, -pivotY);
+        rectF.left *= scale;
+        rectF.top *= scale;
+        rectF.right *= scale;
+        rectF.bottom *= scale;
+        rectF.offset(pivotX, pivotY);
+    }
+
+    /**
      * Maps t from one range to another range.
      *
      * @param t       The value to map.
@@ -515,6 +535,25 @@ public final class Utilities {
         }
         float progress = getProgress(t, fromMin, fromMax);
         return mapRange(interpolator.getInterpolation(progress), toMin, toMax);
+    }
+
+    /**
+     * Maps t from one range to another range.
+     * @param t The value to map.
+     * @param fromMin The lower bound of the range that t is being mapped from.
+     * @param fromMax The upper bound of the range that t is being mapped from.
+     * @param toMin The lower bound of the range that t is being mapped to.
+     * @param toMax The upper bound of the range that t is being mapped to.
+     * @return The mapped value of t.
+     */
+    public static int mapToRange(int t, int fromMin, int fromMax, int toMin, int toMax,
+            Interpolator interpolator) {
+        if (fromMin == fromMax || toMin == toMax) {
+            Log.e(TAG, "mapToRange: range has 0 length");
+            return toMin;
+        }
+        float progress = getProgress(t, fromMin, fromMax);
+        return (int) mapRange(interpolator.getInterpolation(progress), toMin, toMax);
     }
 
     /** Bounds t between a lower and upper bound and maps the result to a range. */
@@ -707,8 +746,15 @@ public final class Utilities {
     }
 
     /**
-     * Returns the full drawable for info as multiple layers of
-     * AdaptiveIconDrawable. The second
+     * Utility method to know if a device's primary language is English.
+     */
+    public static boolean isEnglishLanguage(Context context) {
+        return context.getResources().getConfiguration().locale.getLanguage()
+                .equals(Locale.ENGLISH.getLanguage());
+    }
+
+    /**
+     * Returns the full drawable for info as multiple layers of AdaptiveIconDrawable. The second
      * drawable in the Pair is the badge used with the icon.
      *
      * @param useTheme If true, will theme icons when applicable
@@ -736,8 +782,7 @@ public final class Utilities {
             if (activityInfo == null) {
                 return null;
             }
-            mainIcon = appState.getIconProvider().getIcon(
-                    activityInfo, appState.getInvariantDeviceProfile().fillResIconDpi);
+            mainIcon = appState.getIconCache().getFullResIcon(activityInfo.getActivityInfo());
         } else if (info.itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT) {
             List<ShortcutInfo> siList = ShortcutKey.fromItemInfo(info)
                     .buildRequest(context)
@@ -746,7 +791,7 @@ public final class Utilities {
                 return null;
             } else {
                 ShortcutInfo si = siList.get(0);
-                mainIcon = ShortcutCachingLogic.getIcon(context, si,
+                mainIcon = CacheableShortcutInfo.getIcon(context, si,
                         appState.getInvariantDeviceProfile().fillResIconDpi);
                 // Only fetch badge if the icon is on workspace
                 if (info.id != ItemInfo.NO_ID && badge == null) {
@@ -787,33 +832,18 @@ public final class Utilities {
             return null;
         }
 
-        // Inject monochrome icon drawable
-        if (useTheme) {
-            result.mutate();
-            int[] colors = ThemedIconDrawable.getColors(context);
-            Drawable mono = null;
-            if (ATLEAST_T) {
-                mono = result.getMonochrome();
-            }
-
-            if (mono != null) {
-                mono.setTint(colors[1]);
-            } else if (info instanceof ItemInfoWithIcon iiwi) {
-                // Inject a previously generated monochrome icon
-                Bitmap monoBitmap = iiwi.bitmap.getMono();
-                if (monoBitmap != null) {
-                    // Use BitmapDrawable instead of FastBitmapDrawable so that the colorState is
-                    // preserved in constantState
-                    mono = new BitmapDrawable(monoBitmap);
-                    if (ATLEAST_Q) {
-                        mono.setColorFilter(new BlendModeColorFilter(colors[1], BlendMode.SRC_IN));
+        // Inject theme icon drawable
+        if (ATLEAST_T && useTheme) {
+            try (LauncherIcons li = LauncherIcons.obtain(context)) {
+                if (li.getThemeController() != null) {
+                    AdaptiveIconDrawable themed = li.getThemeController().createThemedAdaptiveIcon(
+                            context,
+                            result,
+                            info instanceof ItemInfoWithIcon iiwi ? iiwi.bitmap : null);
+                    if (themed != null) {
+                        result = themed;
                     }
-                    // Inset the drawable according to the AdaptiveIconDrawable layers
-                    mono = new InsetDrawable(mono, getExtraInsetFraction() / 2);
                 }
-            }
-            if (mono != null) {
-                result = new AdaptiveIconDrawable(new ColorDrawable(colors[0]), mono);
             }
         }
 
@@ -840,11 +870,54 @@ public final class Utilities {
     }
 
     /**
-     * Rotates `inOutBounds` by `delta` 90-degree increments. Rotation is visually
-     * CCW. Parent
-     * sizes represent the "space" that will rotate carrying inOutBounds along with
-     * it to determine
+     * Rotates `inOutBounds` by `delta` 90-degree increments. Rotation is visually CW. Parent
+     * sizes represent the "space" that will rotate carrying inOutBounds along with it to determine
      * the final bounds.
+     *
+     * As an example if this is the input:
+     * +-------------+
+     * |   +-----+   |
+     * |   |     |   |
+     * |   +-----+   |
+     * |             |
+     * |             |
+     * |             |
+     * +-------------+
+     * This would be case delta % 4 == 0:
+     * +-------------+
+     * |   +-----+   |
+     * |   |     |   |
+     * |   +-----+   |
+     * |             |
+     * |             |
+     * |             |
+     * +-------------+
+     * This would be case delta % 4 == 1:
+     * +----------------+
+     * |          +--+  |
+     * |          |  |  |
+     * |          |  |  |
+     * |          +--+  |
+     * |                |
+     * +----------------+
+     * This would be case delta % 4 == 2: // This is case was reverted to previous behaviour which
+     * doesn't match the illustration due to b/353965234
+     * +-------------+
+     * |             |
+     * |             |
+     * |             |
+     * |   +-----+   |
+     * |   |     |   |
+     * |   +-----+   |
+     * +-------------+
+     * This would be case delta % 4 == 3:
+     * +----------------+
+     * |  +--+          |
+     * |  |  |          |
+     * |  |  |          |
+     * |  +--+          |
+     * |                |
+     * +----------------+
      */
     public static void rotateBounds(Rect inOutBounds, int parentWidth, int parentHeight,
             int delta) {
@@ -977,6 +1050,9 @@ public final class Utilities {
             @NonNull Rect inclusionBounds,
             @NonNull Rect exclusionBounds,
             @AdjustmentDirection int adjustmentDirection) {
+        if (!Rect.intersects(targetViewBounds, exclusionBounds)) {
+            return;
+        }
         switch (adjustmentDirection) {
             case TRANSLATE_RIGHT:
                 targetView.setTranslationX(Math.min(
