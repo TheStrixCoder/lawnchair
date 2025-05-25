@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.shared;
-
-import android.window.RemoteTransition;
-import android.window.TransitionFilter;
+package com.android.wm.shell.shared.bubbles;
 
 /**
- * Listener interface that Launcher attaches to SystemUI to get home activity transition callbacks
- * on the default display.
+ * Constants shared between bubbles in shell & things we have to do for bubbles in launcher.
  */
-oneway interface IHomeTransitionListener {
+public class BubbleConstants {
 
-    /**
-     * Called when a transition changes the visibility of the home activity on the default display.
-     */
-    void onHomeVisibilityChanged(in boolean isVisible);
+    /** The alpha for the scrim shown when bubbles are expanded. */
+    public static float BUBBLE_EXPANDED_SCRIM_ALPHA = .32f;
 }
-

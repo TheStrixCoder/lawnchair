@@ -340,7 +340,8 @@ composeCompiler {
     reportsDestination = layout.buildDirectory.dir("compose_build_reports")
 }
 
-addFrameworkJar('framework-15.jar')
+//addFrameworkJar('framework-15.jar')
+addFrameworkJar('framework-15-qpr2.jar')
 
 dependencies {
     implementation projects.iconloaderlib

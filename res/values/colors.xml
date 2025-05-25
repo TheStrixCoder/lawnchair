@@ -98,6 +98,9 @@
     <color name="preload_icon_background_color_dark">#40484D</color>
 
     <color name="work_turn_on_stroke">?android:attr/colorAccent</color>
+    <color name="work_fab_bg_color">#A8C7FA</color>
+    <color name="work_fab_icon_color">#041E49</color>
+
 
     <color name="widget_picker_primary_surface_color_light">#EFEDED</color>
     <color name="widget_picker_secondary_surface_color_light">#FAF9F8</color>
@@ -155,6 +158,8 @@
 
     <color name="material_color_surface_container_lowest">#FFFFFF</color>
     <color name="material_color_on_surface">#1B1B1F</color>
+    <color name="material_color_on_primary_fixed_variant">#2B4678</color>
+    <color name="material_color_on_primary_fixed">#001A41</color>
 
     <color name="system_primary_container_light">#D9E2FF</color>
     <color name="system_on_primary_container_light">#001945</color>
@@ -302,4 +307,6 @@
     <color name="materialColorSecondary">@color/system_secondary_light</color>
     <color name="materialColorTertiary">@color/system_tertiary_light</color>
     <color name="materialColorError">@color/system_error_light</color>
+    <color name="material_color_surface_container">#EFEDF1</color>
+    <color name="material_color_primary_fixed_dim">#ADC6FF</color>
 </resources>

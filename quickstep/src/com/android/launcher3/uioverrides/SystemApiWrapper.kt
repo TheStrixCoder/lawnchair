@@ -68,9 +68,13 @@ open class SystemApiWrapper @Inject constructor(@ApplicationContext context: Con
         }
     }
 
-    override fun createFadeOutAnimOptions(): ActivityOptions =
-        ActivityOptions.makeBasic().apply {
-            remoteTransition = RemoteTransition(FadeOutRemoteTransition(), "FadeOut")
+    override fun createFadeOutAnimOptions(): ActivityOptions {
+        return try {
+            ActivityOptions.makeBasic().apply {
+                remoteTransition = RemoteTransition(FadeOutRemoteTransition())
+            }
+        } catch (t: Throwable) {
+            super.createFadeOutAnimOptions()
         }
     }
 
@@ -79,20 +83,22 @@ open class SystemApiWrapper @Inject constructor(@ApplicationContext context: Con
         if (!enablePrivateSpace() || !LawnchairApp.isRecentsEnabled) {
             return super.queryAllUsers()
         }
-        val users = ArrayMap<UserHandle, UserIconInfo>()
-        mContext.getSystemService(UserManager::class.java)!!.userProfiles?.forEach { user ->
-            mContext.getSystemService(LauncherApps::class.java)!!.getLauncherUserInfo(user)?.apply {
-                users[user] =
-                    UserIconInfo(
-                        user,
-                        when (userType) {
-                            UserManager.USER_TYPE_PROFILE_MANAGED -> UserIconInfo.TYPE_WORK
-                            UserManager.USER_TYPE_PROFILE_CLONE -> UserIconInfo.TYPE_CLONED
-                            UserManager.USER_TYPE_PROFILE_PRIVATE -> UserIconInfo.TYPE_PRIVATE
-                            else -> UserIconInfo.TYPE_MAIN
-                        },
-                        userSerialNumber.toLong(),
-                    )
+        return try {
+            val users = ArrayMap<UserHandle, UserIconInfo>()
+            mContext.getSystemService(UserManager::class.java)!!.userProfiles?.forEach { user ->
+                mContext.getSystemService(LauncherApps::class.java)!!.getLauncherUserInfo(user)?.apply {
+                    users[user] =
+                        UserIconInfo(
+                            user,
+                            when (userType) {
+                                UserManager.USER_TYPE_PROFILE_MANAGED -> UserIconInfo.TYPE_WORK
+                                UserManager.USER_TYPE_PROFILE_CLONE -> UserIconInfo.TYPE_CLONED
+                                UserManager.USER_TYPE_PROFILE_PRIVATE -> UserIconInfo.TYPE_PRIVATE
+                                else -> UserIconInfo.TYPE_MAIN
+                            },
+                            userSerialNumber.toLong()
+                        )
+                }
             }
             return users
         } catch (t : Throwable) {
@@ -118,22 +124,6 @@ open class SystemApiWrapper @Inject constructor(@ApplicationContext context: Con
             if (
                 enablePrivateSpace() &&
                 (privateSpaceAppInstallerButton() || enablePrivateSpaceInstallShortcut())
-        )
-            ProxyActivityStarter.getLaunchIntent(
-                mContext,
-                StartActivityParams(null as PendingIntent?, 0).apply {
-                    intentSender =
-                        mContext
-                            .getSystemService(LauncherApps::class.java)!!
-                            .getAppMarketActivityIntent(packageName, user)
-                    options =
-                        ActivityOptions.makeBasic()
-                            .setPendingIntentBackgroundActivityStartMode(
-                                ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_ALLOWED
-                            )
-                            .toBundle()
-                    requireActivityResult = false
-                },
             )
                 ProxyActivityStarter.getLaunchIntent(
                     mContext,
@@ -192,33 +182,34 @@ open class SystemApiWrapper @Inject constructor(@ApplicationContext context: Con
      * as HOME app, a toast asking the user to do the latter is shown.
      */
     override fun assignDefaultHomeRole(context: Context) {
-        val roleManager = context.getSystemService(RoleManager::class.java)
-        if (
-            (roleManager!!.isRoleAvailable(RoleManager.ROLE_HOME) &&
-                !roleManager.isRoleHeld(RoleManager.ROLE_HOME))
-        ) {
-            val roleRequestIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
-            val pendingIntent =
-                PendingIntent(
-                    object : IIntentSender.Stub() {
-                        override fun send(
-                            code: Int,
-                            intent: Intent,
-                            resolvedType: String?,
-                            allowlistToken: IBinder?,
-                            finishedReceiver: IIntentReceiver?,
-                            requiredPermission: String?,
-                            options: Bundle?,
-                        ) {
-                            if (code != -1) {
-                                Executors.MAIN_EXECUTOR.execute {
-                                    Toast.makeText(
+        try {
+            val roleManager = context.getSystemService(RoleManager::class.java)
+            if (
+                (roleManager!!.isRoleAvailable(RoleManager.ROLE_HOME) &&
+                    !roleManager.isRoleHeld(RoleManager.ROLE_HOME))
+            ) {
+                val roleRequestIntent = roleManager.createRequestRoleIntent(RoleManager.ROLE_HOME)
+                val pendingIntent =
+                    PendingIntent(
+                        object : IIntentSender.Stub() {
+                            override fun send(
+                                code: Int,
+                                intent: Intent,
+                                resolvedType: String?,
+                                allowlistToken: IBinder?,
+                                finishedReceiver: IIntentReceiver?,
+                                requiredPermission: String?,
+                                options: Bundle?
+                            ) {
+                                if (code != -1) {
+                                    Executors.MAIN_EXECUTOR.execute {
+                                        Toast.makeText(
                                             context,
                                             context.getString(
                                                 R.string.set_default_home_app,
-                                                context.getString(R.string.derived_app_name),
+                                                context.getString(R.string.derived_app_name)
                                             ),
-                                            Toast.LENGTH_LONG,
+                                            Toast.LENGTH_LONG
                                         )
                                             .show()
                                     }

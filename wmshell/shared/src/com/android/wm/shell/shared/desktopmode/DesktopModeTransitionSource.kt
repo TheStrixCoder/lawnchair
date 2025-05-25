@@ -1,4 +1,4 @@
-package com.android.wm.shell.common.desktopmode
+package com.android.wm.shell.shared.desktopmode
 
 import android.os.Parcel
 import android.os.Parcelable

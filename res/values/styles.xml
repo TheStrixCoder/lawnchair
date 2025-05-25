@@ -84,7 +84,10 @@
         <item name="android:statusBarColor">#00000000</item>
         <item name="android:navigationBarColor">#00000000</item>
         <item name="android:switchStyle">@style/SwitchStyle</item>
-    </style>
+
+        <item name="materialColorSurfaceContainer">@color/material_color_surface_container</item>
+
+</style>
 
     <style name="SwitchStyle"
         parent="@android:style/Widget.Material.CompoundButton.Switch">
