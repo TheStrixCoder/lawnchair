@@ -1,13 +1,14 @@
 package app.lawnchair.overview
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Matrix
 import androidx.annotation.Keep
 import app.lawnchair.util.RecentHelper
 import app.lawnchair.util.TaskUtilLockState
 import com.android.quickstep.TaskOverlayFactory
 import com.android.quickstep.views.OverviewActionsView
-import com.android.quickstep.views.TaskView.TaskContainer
+import com.android.quickstep.views.TaskContainer
 import com.android.systemui.shared.recents.model.Task
 import com.android.systemui.shared.recents.model.ThumbnailData
 
@@ -22,9 +23,9 @@ class TaskOverlayFactoryImpl(@Suppress("UNUSED_PARAMETER") context: Context) : T
 
         override fun initOverlay(
             task: Task?,
-            thumbnail: ThumbnailData?,
-            matrix: Matrix,
-            rotated: Boolean,
+            thumbnail: Bitmap?,
+            matrix: Matrix?,
+            rotated: Boolean
         ) {
             actionsView.updateDisabledFlags(
                 OverviewActionsView.DISABLED_NO_THUMBNAIL,

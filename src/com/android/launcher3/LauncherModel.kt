@@ -38,6 +38,7 @@ import com.android.launcher3.model.ModelDelegate
 import com.android.launcher3.model.ModelLauncherCallbacks
 import com.android.launcher3.model.ModelTaskController
 import com.android.launcher3.model.ModelWriter
+import com.android.launcher3.model.PackageInstallStateChangedTask
 import com.android.launcher3.model.PackageUpdatedTask
 import com.android.launcher3.model.ReloadStringCacheTask
 import com.android.launcher3.model.ShortcutsChangedTask
@@ -45,6 +46,7 @@ import com.android.launcher3.model.UserLockStateChangedTask
 import com.android.launcher3.model.WidgetsFilterDataProvider
 import com.android.launcher3.model.data.ItemInfo
 import com.android.launcher3.model.data.WorkspaceItemInfo
+import com.android.launcher3.pm.PackageInstallInfo
 import com.android.launcher3.pm.UserCache
 import com.android.launcher3.shortcuts.ShortcutRequest
 import com.android.launcher3.testing.shared.TestProtocol.sDebugTracing
@@ -434,6 +436,10 @@ class LauncherModel(
             dataModel.widgetsModel.updateWidgetFilters(widgetsFilterDataProvider)
             taskController.bindUpdatedWidgets(dataModel)
         }
+    }
+
+    fun onPackageStateChanged(installInfo: PackageInstallInfo) {
+        enqueueModelUpdateTask(PackageInstallStateChangedTask(installInfo))
     }
 
     fun enqueueModelUpdateTask(task: ModelUpdateTask) {
