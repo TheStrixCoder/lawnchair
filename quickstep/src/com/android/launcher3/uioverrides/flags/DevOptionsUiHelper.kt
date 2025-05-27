@@ -30,6 +30,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.os.ParcelFileDescriptor.AutoCloseOutputStream
+import android.provider.DeviceConfig
 import android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS
 import android.provider.Settings.Secure
 import android.text.Html
@@ -81,6 +82,7 @@ import com.android.launcher3.util.PluginManagerWrapper
 import com.android.launcher3.util.StartActivityParams
 import com.android.launcher3.util.UserIconInfo
 import com.android.quickstep.util.DeviceConfigHelper
+import com.android.quickstep.util.DeviceConfigHelper.Companion.NAMESPACE_LAUNCHER
 import com.android.quickstep.util.DeviceConfigHelper.DebugInfo
 import com.android.systemui.shared.plugins.PluginEnabler
 import com.android.systemui.shared.plugins.PluginPrefs

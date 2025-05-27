@@ -92,7 +92,7 @@ class LawnchairShortcut {
             val outObj = Array<Any?>(1) { null }
             var icon = Utilities.loadFullDrawableWithoutTheme(launcher, appInfo, 0, 0, outObj)
             if (mItemInfo.screenId != NO_ID && icon is BitmapInfo.Extender) {
-                icon = icon.getThemedDrawable(launcher)
+//                icon = icon.getThemedDrawable(launcher)
             }
             val launcherActivityInfo = outObj[0] as LauncherActivityInfo
             val defaultTitle = launcherActivityInfo.label.toString()

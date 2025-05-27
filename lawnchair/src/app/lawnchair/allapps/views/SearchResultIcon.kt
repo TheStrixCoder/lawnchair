@@ -220,11 +220,11 @@ class SearchResultIcon(context: Context, attrs: AttributeSet?) :
                     val activityIcon = iconProvider.getIcon(activityInfo)
                     val bitmap = li.createIconBitmap(activityIcon, 1f)
                     val bitmapInfo = BitmapInfo.of(bitmap, packageIcon.color)
-                    info.bitmap = li.badgeBitmap(info.bitmap.icon, bitmapInfo)
+                    info.bitmap = li.createIconBitmap(info.bitmap.icon)
                 } catch (_: PackageManager.NameNotFoundException) {
                 }
             } else if (info.hasFlags(SearchActionItemInfo.FLAG_BADGE_WITH_PACKAGE) && info.bitmap != packageIcon) {
-                info.bitmap = li.badgeBitmap(info.bitmap.icon, packageIcon)
+                info.bitmap = li.createIconBitmap(info.bitmap.icon)
             }
         }
     }

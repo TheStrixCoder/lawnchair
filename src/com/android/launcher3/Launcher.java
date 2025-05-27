@@ -108,7 +108,9 @@ import static com.android.launcher3.util.SettingsCache.TOUCHPAD_NATURAL_SCROLLIN
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
+import android.annotation.RequiresApi;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -154,6 +156,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.OvershootInterpolator;
 import android.widget.Toast;
+import android.window.BackEvent;
 import android.window.OnBackAnimationCallback;
 
 import androidx.annotation.CallSuper;
@@ -650,71 +653,17 @@ public class Launcher extends StatefulActivity<LauncherState>
         return new ColdRebootStartupLatencyLogger();
     }
 
-    /**
-     * Provide {@link OnBackAnimationCallback} in below order:
-     * <ol>
-     * <li>auto cancel action mode handler
-     * <li>drag handler
-     * <li>view handler
-     * <li>registered {@link BackPressHandler}
-     * <li>state handler
-     * </ol>
-     *
-     * A back gesture (a single click on back button, or a swipe back gesture that
-     * contains a series
-     * of swipe events) should be handled by the same handler from above list. For a
-     * new back
-     * gesture, a new handler should be regenerated.
-     *
-     * Note that state handler will always be handling the back press event if the
-     * previous 3 don't.
-     */
-    @NonNull
-    protected OnBackPressedHandler getOnBackPressedHandler() {
-        // #1 auto cancel action mode handler
-        if (isInAutoCancelActionMode()) {
-            return this::finishAutoCancelActionMode;
-        }
-
-        // #2 drag handler
-        if (mDragController.isDragging()) {
-            return mDragController::cancelDrag;
-        }
-
-        // #3 view handler
-        AbstractFloatingView topView = AbstractFloatingView.getTopOpenView(Launcher.this);
-        if (topView != null && topView.canHandleBack()) {
-            return topView;
-        }
-
-        // #4 state handler
-        return new OnBackPressedHandler() {
-            @Override
-            public void onBackStarted() {
-                Launcher.this.onBackStarted();
-            }
-
-            @Override
-            public void onBackInvoked() {
-                onStateBack();
-            }
-
-            @Override
-            public void onBackProgressed(
-                    @FloatRange(from = 0.0, to = 1.0) float backProgress) {
-                mStateManager.getState().onBackProgressed(
-                        Launcher.this, backProgress);
-            }
-
-            @Override
-            public void onBackCancelled() {
-                Launcher.this.onBackCancelled();
-            }
-        };
-    }
-
     protected LauncherOverlayManager getDefaultOverlay() {
         return new LauncherOverlayManager() {
+            @Override
+            public void onActivityStopped(@NonNull Activity activity) {
+                
+            }
+
+            @Override
+            public void onActivityDestroyed(@NonNull Activity activity) {
+
+            }
         };
     }
 
@@ -1521,6 +1470,74 @@ public class Launcher extends StatefulActivity<LauncherState>
         }
     }
 
+    /**
+     * Provide {@link OnBackAnimationCallback} in below order:
+     * <ol>
+     *  <li> auto cancel action mode handler
+     *  <li> drag handler
+     *  <li> view handler
+     *  <li> registered {@link BackPressHandler}
+     *  <li> state handler
+     * </ol>
+     *
+     * A back gesture (a single click on back button, or a swipe back gesture that contains a series
+     * of swipe events) should be handled by the same handler from above list. For a new back
+     * gesture, a new handler should be regenerated.
+     *
+     * Note that state handler will always be handling the back press event if the previous 3 don't.
+     */
+    @NonNull
+    @RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+    protected OnBackAnimationCallback getOnBackAnimationCallback() {
+        // #1 auto cancel action mode handler
+        if (isInAutoCancelActionMode()) {
+            return this::finishAutoCancelActionMode;
+        }
+
+        // #2 drag handler
+        if (mDragController.isDragging()) {
+            return mDragController::cancelDrag;
+        }
+
+        // #3 view handler
+        AbstractFloatingView topView =
+            AbstractFloatingView.getTopOpenView(Launcher.this);
+        if (topView != null && topView.canHandleBack()) {
+            return topView;
+        }
+
+        // #4 Custom back handlers
+        for (BackPressHandler handler : mBackPressedHandlers) {
+            if (handler.canHandleBack()) {
+                return handler;
+            }
+        }
+
+        // #5 state handler
+        return new OnBackAnimationCallback() {
+            @Override
+            public void onBackStarted(BackEvent backEvent) {
+                Launcher.this.onBackStarted();
+            }
+
+            @Override
+            public void onBackInvoked() {
+                onStateBack();
+            }
+
+            @Override
+            public void onBackProgressed(@NonNull BackEvent backEvent) {
+                mStateManager.getState().onBackProgressed(
+                    Launcher.this, backEvent.getProgress());
+            }
+
+            @Override
+            public void onBackCancelled() {
+                Launcher.this.onBackCancelled();
+            }
+        };
+    }
+
     @Override
     public @Nullable FolderIcon findFolderIcon(final int folderIconId) {
         return (FolderIcon) mWorkspace.getHomescreenIconByItemId(folderIconId);
@@ -2190,7 +2207,7 @@ public class Launcher extends StatefulActivity<LauncherState>
     @Override
     @TargetApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
     public void onBackPressed() {
-        getOnBackPressedHandler().onBackInvoked();
+        getOnBackAnimationCallback().onBackInvoked();
     }
 
     protected void onBackStarted() {

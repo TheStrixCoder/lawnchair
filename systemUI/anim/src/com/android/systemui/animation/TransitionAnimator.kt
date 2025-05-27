@@ -31,6 +31,7 @@ import android.view.animation.Interpolator
 import androidx.annotation.VisibleForTesting
 import com.android.app.animation.Interpolators.LINEAR
 import com.android.systemui.shared.Flags.returnAnimationFrameworkLibrary
+import com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived
 import java.util.concurrent.Executor
 import kotlin.math.roundToInt
 
@@ -64,6 +65,8 @@ class TransitionAnimator(
                 1.0f
             )
         }
+        fun longLivedReturnAnimationsEnabled() =
+            returnAnimationFrameworkLibrary() && returnAnimationFrameworkLongLived()
 
         internal fun checkReturnAnimationFrameworkFlag() {
             check(returnAnimationFrameworkLibrary()) {

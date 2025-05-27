@@ -374,8 +374,6 @@ public final class FeatureFlagsImpl implements FeatureFlags {
     }
 
     @Override
-    
-    
     public boolean onlyReuseBubbledTaskWhenLaunchedFromBubble() {
         if (isReadFromNew) {
             if (!isCached) {
@@ -388,6 +386,11 @@ public final class FeatureFlagsImpl implements FeatureFlags {
         }
         return onlyReuseBubbledTaskWhenLaunchedFromBubble;
 
+    }
+
+    @Override
+    public boolean enableShellTopTaskTracking() {
+        return false;
     }
 
 }

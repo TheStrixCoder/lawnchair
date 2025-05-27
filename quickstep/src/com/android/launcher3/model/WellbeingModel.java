@@ -46,6 +46,7 @@ import androidx.annotation.WorkerThread;
 import com.android.launcher3.R;
 import com.android.launcher3.dagger.ApplicationContext;
 import com.android.launcher3.dagger.LauncherAppSingleton;
+import com.android.launcher3.dagger.LauncherBaseAppComponent;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.popup.RemoteActionShortcut;
 import com.android.launcher3.popup.SystemShortcut;
@@ -83,7 +84,7 @@ public final class WellbeingModel implements SafeCloseable {
     private static final String EXTRA_SUCCESS = "success";
 
     public static final DaggerSingletonObject<WellbeingModel> INSTANCE =
-            new DaggerSingletonObject<>(QuickstepBaseAppComponent::getWellbeingModel);
+            new DaggerSingletonObject<>(LauncherBaseAppComponent::getWellbeingModel);
 
     private final Context mContext;
     private final String mWellbeingProviderPkg;

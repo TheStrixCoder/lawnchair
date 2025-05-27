@@ -308,6 +308,18 @@ public class CustomFeatureFlags implements FeatureFlags {
         return getValue(Flags.FLAG_USE_ACTIVITY_OVERLAY,
                 FeatureFlags::useActivityOverlay);
     }
+    
+    @Override
+    public boolean showTaskbarPinningPopupFromAnywhere() {
+        return getValue(Flags.FLAG_SHOW_TASKBAR_PINNING_POPUP_FROM_ANYWHERE,
+            FeatureFlags::showTaskbarPinningPopupFromAnywhere);
+    }
+    
+    @Override
+    public boolean enableRecentsWindowProtoLog() {
+        return getValue(Flags.FLAGS_ENABLE_RECENTS_WINDOW_PROTOLOG,
+            FeatureFlags::enableRecentsWindowProtoLog);
+    }
 
     public boolean isFlagReadOnlyOptimized(String flagName) {
         if (mReadOnlyFlagsSet.contains(flagName) &&

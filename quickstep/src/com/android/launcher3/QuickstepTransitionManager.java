@@ -67,6 +67,7 @@ import static com.android.quickstep.util.AnimUtils.completeRunnableListCallback;
 import static com.android.systemui.shared.Flags.returnAnimationFrameworkLibrary;
 import static com.android.systemui.shared.system.QuickStepContract.getWindowCornerRadius;
 import static com.android.systemui.shared.system.QuickStepContract.supportsRoundedCornersOnWindows;
+import static com.android.wm.shell.transition.Transitions.ENABLE_SHELL_TRANSITIONS;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -1311,7 +1312,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
      * ie. pressing home, swiping up from nav bar.
      */
     RemoteAnimationFactory createWallpaperOpenRunner(boolean fromUnlock) {
-        return new WallpaperOpenLauncherAnimationRunner(fromUnlock);
+        return new WallpaperOpenLauncherAnimationRunner();
     }
 
     /**
@@ -2038,12 +2039,7 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
                 public boolean isBelowAnimatingWindow() {
                     return true;
                 }
-
-                @Nullable
-                @Override
-                public WindowAnimationState getWindowAnimatorState() {
-                    return windowState;
-                }
+                
             };
         }
 

@@ -11,7 +11,8 @@ import android.os.Build
 import android.os.Process
 import android.os.UserHandle
 import com.android.launcher3.icons.ClockDrawableWrapper
-import com.android.launcher3.icons.ThemedIconDrawable
+import com.android.launcher3.icons.IconProvider
+import com.android.launcher3.icons.mono.ThemedIconDrawable
 import com.android.launcher3.util.MainThreadInitializedObject
 import com.android.launcher3.util.SafeCloseable
 
@@ -88,7 +89,7 @@ class IconPackProvider(private val context: Context) : SafeCloseable {
         iconEntry: IconEntry,
         drawable: Drawable,
     ): Drawable? {
-        val themedColors: IntArray = ThemedIconDrawable.getThemedColors(context)
+        val themedColors: IntArray = ThemedIconDrawable.getColors(context)
         try {
             val res = packageManager.getResourcesForApplication(iconEntry.packPackageName)
 

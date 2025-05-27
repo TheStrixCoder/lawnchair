@@ -116,4 +116,19 @@ public final class Flags {
 
     private static FeatureFlags FEATURE_FLAGS = new FeatureFlagsImpl();
 
+    public static boolean enableShellTopTaskTracking() {
+        return FEATURE_FLAGS.enableShellTopTaskTracking();
+    }
+    
+    public static boolean enableTaskbarOnPhones() {
+        return false;
+    }
+    
+    public static boolean enableBubbleBarInPersistentTaskBar() {
+        return false;
+    }
+
+    public static boolean enablePip2() {
+        return false;
+    }
 }

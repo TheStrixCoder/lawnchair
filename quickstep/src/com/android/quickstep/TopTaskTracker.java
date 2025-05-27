@@ -24,7 +24,6 @@ import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.launcher3.util.SplitConfigurationOptions.STAGE_POSITION_TOP_OR_LEFT;
 import static com.android.launcher3.util.SplitConfigurationOptions.STAGE_TYPE_A;
-import static com.android.wm.shell.Flags.enableFlexibleSplit;
 import static com.android.wm.shell.shared.GroupedTaskInfo.TYPE_SPLIT;
 
 import android.app.ActivityManager.RunningTaskInfo;
@@ -37,6 +36,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 
+import com.android.launcher3.Flags;
 import com.android.launcher3.util.MainThreadInitializedObject;
 import com.android.launcher3.util.SafeCloseable;
 import com.android.launcher3.util.SplitConfigurationOptions;
@@ -52,6 +52,7 @@ import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.wm.shell.shared.GroupedTaskInfo;
 import com.android.wm.shell.splitscreen.ISplitScreenListener;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -249,7 +250,7 @@ public class TopTaskTracker extends ISplitScreenListener.Stub
         }
 
         if (stage == SplitConfigurationOptions.STAGE_TYPE_MAIN
-                || (enableFlexibleSplit() && stage == STAGE_TYPE_A)) {
+                || (Flags.enableFlexibleSplit() && stage == STAGE_TYPE_A)) {
             mMainStagePosition.taskId = taskId;
         } else {
             mSideStagePosition.taskId = taskId;

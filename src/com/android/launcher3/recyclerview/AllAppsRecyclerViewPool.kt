@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView.RecycledViewPool
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.android.launcher3.BubbleTextView
 import com.android.launcher3.BuildConfig
+import com.android.launcher3.BuildConfigs
 import com.android.launcher3.allapps.BaseAllAppsAdapter
 import com.android.launcher3.config.FeatureFlags
 import com.android.launcher3.util.CancellableTask
@@ -68,7 +69,7 @@ class AllAppsRecyclerViewPool<T> : RecycledViewPool() where T : Context, T : Act
         }
 
         if (activeRv.layoutManager == null) {
-            if (BuildConfig.IS_STUDIO_BUILD) {
+            if (BuildConfigs.IS_STUDIO_BUILD) {
                 throw IllegalStateException(NULL_LAYOUT_MANAGER_ERROR_STRING)
             } else {
                 Log.e(TAG, NULL_LAYOUT_MANAGER_ERROR_STRING)

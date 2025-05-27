@@ -94,6 +94,12 @@ public class RecentTasksList {
         mChangeId = 1;
         mSysUiProxy = sysUiProxy;
 
+        sysUiProxy.registerRecentTasksListener(new IRecentTasksListener.Stub() {
+            @Override
+            public void onRecentTasksChanged() throws RemoteException {
+                mMainThreadExecutor.execute(RecentTasksList.this::onRecentTasksChanged);
+            }
+
             @Override
             public void onRunningTaskAppeared(RunningTaskInfo taskInfo) {
                 mMainThreadExecutor.execute(() -> {
@@ -106,12 +112,7 @@ public class RecentTasksList {
                 mMainThreadExecutor.execute(() -> {
                     RecentTasksList.this.onRunningTaskVanished(taskInfo);
                 });
-            } else if (LawnchairQuickstepCompat.ATLEAST_Q) {
-                TaskStackChangeListeners.getInstance().registerTaskStackListener(new TaskStackChangeListener() {
-                    @Override
-                    public void onTaskStackChanged() {
-                        onRecentTasksChanged();
-                    }
+            }
 
             @Override
             public void onRunningTaskChanged(RunningTaskInfo taskInfo) {
@@ -334,18 +335,7 @@ public class RecentTasksList {
         }
         // The raw tasks are given in most-recent to least-recent order, we need to reverse it
         Collections.reverse(rawTasks);
-
-        try {
-            ParceledListSlice<ActivityManager.RecentTaskInfo> parceledList =
-                    ActivityManager.getService().getRecentTasks(
-                            numTasks, ActivityManager.RECENT_IGNORE_UNAVAILABLE, currentUserId
-                    );
-            recentTasks = (parceledList != null) ? parceledList.getList() : new ArrayList<>();
-        } catch (RemoteException e) {
-            return new TaskLoadResult(requestId, loadKeysOnly, 0);
-        }
-
-        Collections.reverse(recentTasks);
+        
         SparseBooleanArray tmpLockedUsers = new SparseBooleanArray() {
             @Override
             public boolean get(int key) {
@@ -357,10 +347,9 @@ public class RecentTasksList {
             }
         };
 
-        TaskLoadResult allTasks = new TaskLoadResult(requestId, loadKeysOnly, recentTasks.size());
+        TaskLoadResult allTasks = new TaskLoadResult(requestId, loadKeysOnly, rawTasks.size());
         int numVisibleTasks = 0;
-
-        int numVisibleTasks = 0;
+        
         for (GroupedTaskInfo rawTask : rawTasks) {
             if (rawTask.getType() == TYPE_FREEFORM) {
                 // TYPE_FREEFORM tasks is only created when desktop mode can be entered,
@@ -401,7 +390,7 @@ public class RecentTasksList {
                 }
             }
 
-            allTasks.add(new GroupTask(task, null, null));
+            allTasks.add(new GroupTask(task1, task2, null));
         }
 
         return allTasks;
@@ -420,7 +409,7 @@ public class RecentTasksList {
             task.positionInParent = taskInfo.positionInParent;
             task.appBounds = taskInfo.configuration.windowConfiguration.getAppBounds();
             task.isVisible = taskInfo.isVisible;
-            task.isMinimized =
+            task.isMinimised =
                     Arrays.stream(minimizedTaskIds).anyMatch(taskId -> taskId == taskInfo.taskId);
             tasks.add(task);
         }

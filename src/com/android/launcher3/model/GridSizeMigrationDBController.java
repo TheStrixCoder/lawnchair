@@ -16,7 +16,6 @@
 
 package com.android.launcher3.model;
 
-import static com.android.launcher3.Flags.enableSmartspaceRemovalToggle;
 import static com.android.launcher3.Flags.oneGridSpecs;
 import static com.android.launcher3.LauncherSettings.Favorites.TABLE_NAME;
 import static com.android.launcher3.LauncherSettings.Favorites.TMP_TABLE;
@@ -41,13 +40,14 @@ import com.android.launcher3.InvariantDeviceProfile;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.config.FeatureFlags;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
+import com.android.launcher3.provider.LauncherDbUtils;
 import com.android.launcher3.util.GridOccupancy;
 import com.android.launcher3.util.IntArray;
 import com.android.launcher3.widget.LauncherAppWidgetProviderInfo;
 import com.android.launcher3.widget.WidgetManagerHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -151,7 +151,7 @@ public class GridSizeMigrationDBController {
         copyTable(source, TABLE_NAME, target.getWritableDatabase(), TMP_TABLE, context);
 
         long migrationStartTime = System.currentTimeMillis();
-        try (SQLiteTransaction t = new SQLiteTransaction(target.getWritableDatabase())) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(target.getWritableDatabase())) {
             DbReader srcReader = new DbReader(t.getDb(), TMP_TABLE, context);
             DbReader destReader = new DbReader(t.getDb(), TABLE_NAME, context);
 
@@ -181,55 +181,64 @@ public class GridSizeMigrationDBController {
             @NonNull final DeviceGridState srcDeviceState,
             @NonNull final DeviceGridState destDeviceState) {
 
-        srcReader.loadAllWorkspaceEntries();
-
-        // Handle workspace migration
-        final List<DbEntry> workspaceToBeAdded = new ArrayList<>();
+        final List<DbEntry> srcHotseatItems = srcReader.loadHotseatEntries();
+        final List<DbEntry> srcWorkspaceItems = srcReader.loadAllWorkspaceEntries();
+        final List<DbEntry> dstHotseatItems = destReader.loadHotseatEntries();
+        final List<DbEntry> dstWorkspaceItems = destReader.loadAllWorkspaceEntries();
+        final List<DbEntry> hotseatToBeAdded = new ArrayList<>(1);
+        final List<DbEntry> workspaceToBeAdded = new ArrayList<>(1);
         final IntArray toBeRemoved = new IntArray();
 
-        // Process each screen separately
-        for (int screenId : srcReader.mWorkspaceEntriesByScreenId.keySet()) {
-            List<DbEntry> srcScreenItems = srcReader.mWorkspaceEntriesByScreenId.get(screenId);
-            List<DbEntry> destScreenItems = destReader.mWorkspaceEntriesByScreenId.get(screenId);
+        calcDiff(srcHotseatItems, dstHotseatItems, hotseatToBeAdded, toBeRemoved);
+        calcDiff(srcWorkspaceItems, dstWorkspaceItems, workspaceToBeAdded, toBeRemoved);
 
-            if (destScreenItems == null) {
-                destScreenItems = new ArrayList<>();
-            }
+        final int trgX = targetSize.x;
+        final int trgY = targetSize.y;
 
-            List<DbEntry> screenItemsToAdd = new ArrayList<>();
-            IntArray screenItemsToRemove = new IntArray();
-
-            calcDiff(srcScreenItems, destScreenItems, screenItemsToAdd, screenItemsToRemove);
-
-            workspaceToBeAdded.addAll(screenItemsToAdd);
-            toBeRemoved.addAll(screenItemsToRemove);
-
-            solveGridPlacement(helper, srcReader, destReader, screenId,
-                    targetSize.x, targetSize.y, screenItemsToAdd,
-                    srcDeviceState.getColumns(), srcDeviceState.getRows());
+        if (DEBUG) {
+            Log.d(TAG, "Start migration:"
+                + "\n Source Device:"
+                + srcWorkspaceItems.stream().map(DbEntry::toString).collect(
+                Collectors.joining(",\n", "[", "]"))
+                + "\n Target Device:"
+                + dstWorkspaceItems.stream().map(DbEntry::toString).collect(
+                Collectors.joining(",\n", "[", "]"))
+                + "\n Removing Items:"
+                + dstWorkspaceItems.stream().filter(entry ->
+                toBeRemoved.contains(entry.id)).map(DbEntry::toString).collect(
+                Collectors.joining(",\n", "[", "]"))
+                + "\n Adding Workspace Items:"
+                + workspaceToBeAdded.stream().map(DbEntry::toString).collect(
+                Collectors.joining(",\n", "[", "]"))
+                + "\n Adding Hotseat Items:"
+                + hotseatToBeAdded.stream().map(DbEntry::toString).collect(
+                Collectors.joining(",\n", "[", "]"))
+            );
         }
-
-        // Remove entries that are no longer needed
         if (!toBeRemoved.isEmpty()) {
-            removeEntryFromDb(helper.getWritableDatabase(), destReader.mTableName, toBeRemoved);
+            removeEntryFromDb(destReader.mDb, destReader.mTableName, toBeRemoved);
+        }
+        if (hotseatToBeAdded.isEmpty() && workspaceToBeAdded.isEmpty()) {
+            return false;
         }
 
-        // Handle hotseat migration
-        List<DbEntry> srcHotseatEntries = srcReader.loadHotseatEntries();
-        List<DbEntry> destHotseatEntries = destReader.loadHotseatEntries();
-        final ArrayList<DbEntry> hotseatToBeAdded = new ArrayList<>();
-        final IntArray hotseatToBeRemoved = new IntArray();
+        // Sort the items by the reading order.
+        Collections.sort(hotseatToBeAdded);
+        Collections.sort(workspaceToBeAdded);
 
         List<Integer> idsInUse = dstWorkspaceItems.stream().map(entry -> entry.id).collect(
-                Collectors.toList());
+            Collectors.toList());
         idsInUse.addAll(dstHotseatItems.stream().map(entry -> entry.id).toList());
 
         // Migrate hotseat
         solveHotseatPlacement(helper, destHotseatSize,
-                srcReader, destReader, dstHotseatItems, hotseatToBeAdded, idsInUse);
+            srcReader, destReader, dstHotseatItems, hotseatToBeAdded, idsInUse);
 
-        if (!hotseatToBeRemoved.isEmpty()) {
-            removeEntryFromDb(helper.getWritableDatabase(), destReader.mTableName, hotseatToBeRemoved);
+        // Migrate workspace.
+        // First we create a collection of the screens
+        List<Integer> screens = new ArrayList<>();
+        for (int screenId = 0; screenId <= destReader.mLastScreenId; screenId++) {
+            screens.add(screenId);
         }
 
         // Then we place the items on the screens
@@ -238,7 +247,7 @@ public class GridSizeMigrationDBController {
                 Log.d(TAG, "Migrating " + screenId);
             }
             solveGridPlacement(helper, srcReader,
-                    destReader, screenId, trgX, trgY, workspaceToBeAdded, idsInUse);
+                destReader, screenId, trgX, trgY, workspaceToBeAdded, idsInUse);
             if (workspaceToBeAdded.isEmpty()) {
                 break;
             }
@@ -249,7 +258,7 @@ public class GridSizeMigrationDBController {
         int screenId = destReader.mLastScreenId + 1;
         while (!workspaceToBeAdded.isEmpty()) {
             solveGridPlacement(helper, srcReader, destReader, screenId, trgX, trgY,
-                    workspaceToBeAdded, srcWorkspaceItems.stream().map(entry -> entry.id).toList());
+                workspaceToBeAdded, srcWorkspaceItems.stream().map(entry -> entry.id).toList());
             screenId++;
         }
 
@@ -341,27 +350,6 @@ public class GridSizeMigrationDBController {
     static void removeEntryFromDb(SQLiteDatabase db, String tableName, IntArray entryIds) {
         db.delete(tableName,
                 Utilities.createDbSelectionQuery(LauncherSettings.Favorites._ID, entryIds), null);
-    }
-
-    private static HashSet<String> getValidPackages(Context context) {
-        // Initialize list of valid packages. This contain all the packages which are
-        // already on
-        // the device and packages which are being installed. Any item which doesn't
-        // belong to
-        // this set is removed.
-        // Since the loader removes such items anyway, removing these items here doesn't
-        // cause
-        // any extra data loss and gives us more free space on the grid for better
-        // migration.
-        HashSet<String> validPackages = new HashSet<>();
-        for (PackageInfo info : context.getPackageManager()
-                .getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES)) {
-            validPackages.add(info.packageName);
-        }
-        InstallSessionHelper.INSTANCE.get(context)
-                .getActiveSessions().keySet()
-                .forEach(packageUserKey -> validPackages.add(packageUserKey.mPackageName));
-        return validPackages;
     }
 
     private static void solveGridPlacement(@NonNull final DatabaseHelper helper,
@@ -711,127 +699,6 @@ public class GridSizeMigrationDBController {
 
         private Cursor queryWorkspace(String[] columns, String where) {
             return mDb.query(mTableName, columns, where, null, null, null, null);
-        }
-    }
-
-    public static class DbEntry extends ItemInfo implements Comparable<DbEntry> {
-
-        private String mIntent;
-        private String mProvider;
-        private Map<String, Set<Integer>> mFolderItems = new HashMap<>();
-
-        /**
-         * Id of the specific widget.
-         */
-        public int appWidgetId = NO_ID;
-
-        /** Comparator according to the reading order */
-        @Override
-        public int compareTo(DbEntry another) {
-            if (screenId != another.screenId) {
-                return Integer.compare(screenId, another.screenId);
-            }
-            if (cellY != another.cellY) {
-                return Integer.compare(cellY, another.cellY);
-            }
-            return Integer.compare(cellX, another.cellX);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
-            DbEntry entry = (DbEntry) o;
-            return Objects.equals(getEntryMigrationId(), entry.getEntryMigrationId());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getEntryMigrationId());
-        }
-
-        public void updateContentValues(ContentValues values) {
-            values.put(LauncherSettings.Favorites.SCREEN, screenId);
-            values.put(LauncherSettings.Favorites.CELLX, cellX);
-            values.put(LauncherSettings.Favorites.CELLY, cellY);
-            values.put(LauncherSettings.Favorites.SPANX, spanX);
-            values.put(LauncherSettings.Favorites.SPANY, spanY);
-        }
-
-        @Override
-        public void writeToValues(@NonNull ContentWriter writer) {
-            super.writeToValues(writer);
-            writer.put(LauncherSettings.Favorites.APPWIDGET_ID, appWidgetId);
-        }
-
-        @Override
-        public void readFromValues(@NonNull ContentValues values) {
-            super.readFromValues(values);
-            appWidgetId = values.getAsInteger(LauncherSettings.Favorites.APPWIDGET_ID);
-        }
-
-        /**
-         * This id is not used in the DB is only used while doing the migration and it
-         * identifies
-         * an entry on each workspace. For example two calculator icons would have the
-         * same
-         * migration id even thought they have different database ids.
-         */
-        public String getEntryMigrationId() {
-            switch (itemType) {
-                case LauncherSettings.Favorites.ITEM_TYPE_FOLDER:
-                case LauncherSettings.Favorites.ITEM_TYPE_APP_PAIR:
-                    return getFolderMigrationId();
-                case LauncherSettings.Favorites.ITEM_TYPE_APPWIDGET:
-                    // mProvider is the app the widget belongs to and appWidgetId it's the unique
-                    // is of the widget, we need both because if you remove a widget and then add it
-                    // again, then it can change and the WidgetProvider would not know the widget.
-                    return mProvider + appWidgetId;
-                case LauncherSettings.Favorites.ITEM_TYPE_APPLICATION:
-                    final String intentStr = cleanIntentString(mIntent);
-                    try {
-                        Intent i = Intent.parseUri(intentStr, 0);
-                        return Objects.requireNonNull(i.getComponent()).toString();
-                    } catch (Exception e) {
-                        return intentStr;
-                    }
-                default:
-                    return cleanIntentString(mIntent);
-            }
-        }
-
-        /**
-         * This method should return an id that should be the same for two folders
-         * containing the
-         * same elements.
-         */
-        @NonNull
-        private String getFolderMigrationId() {
-            return mFolderItems.keySet().stream()
-                    .map(intentString -> mFolderItems.get(intentString).size()
-                            + cleanIntentString(intentString))
-                    .sorted()
-                    .collect(Collectors.joining(","));
-        }
-
-        /**
-         * This is needed because sourceBounds can change and make the id of two equal
-         * items
-         * different.
-         */
-        @NonNull
-        private String cleanIntentString(@NonNull String intentStr) {
-            try {
-                Intent i = Intent.parseUri(intentStr, 0);
-                i.setSourceBounds(null);
-                return i.toURI();
-            } catch (URISyntaxException e) {
-                Log.e(TAG, "Unable to parse Intent string", e);
-                return intentStr;
-            }
-
         }
     }
 }

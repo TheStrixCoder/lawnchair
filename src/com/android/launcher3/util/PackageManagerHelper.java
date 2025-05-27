@@ -25,10 +25,13 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
@@ -41,6 +44,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.launcher3.Flags;
 import com.android.launcher3.PendingAddItemInfo;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
@@ -168,6 +172,22 @@ public class PackageManagerHelper {
         }
     }
 
+
+    /**
+     * Returns the application info for the provided package or null
+     */
+    @Nullable
+    public ApplicationInfo getApplicationInfo(@NonNull final String packageName,
+                                              @NonNull final UserHandle user, final int flags) {
+        try {
+            ApplicationInfo info = mLauncherApps.getApplicationInfo(packageName, flags, user);
+            return !isPackageInstalledOrArchived(info) || !info.enabled ? null : info;
+        } catch (PackageManager.NameNotFoundException e) {
+            return null;
+        }
+    }
+
+
     /**
      * Returns the preferred launch activity intent for a given package.
      */
@@ -264,11 +284,18 @@ public class PackageManagerHelper {
         }
     }
 
-    public static boolean isSystemApp(@NonNull final Context context,
-            @NonNull final Intent intent) {
+    public static boolean isSystemApp(@NonNull final Context context, String pkgName) {
+        return isSystemApp(context, null, pkgName);
+    }
+
+    public static boolean isSystemApp(@NonNull final Context context, Intent intent) {
+        return isSystemApp(context, intent, null);
+    }
+
+    public static boolean isSystemApp(@NonNull final Context context, Intent intent, String pkgName) {
         PackageManager pm = context.getPackageManager();
-        // Get the package name for intent
         String packageName = null;
+        // If the intent is not null, let's get the package name from the intent.
         if (intent != null) {
             ComponentName cn = intent.getComponent();
             if (cn == null) {
@@ -280,17 +307,16 @@ public class PackageManagerHelper {
                 packageName = cn.getPackageName();
             }
         }
-        return isSystemApp(context, packageName);
-    }
-
-    public static boolean isSystemApp(Context context, String packageName) {
-        PackageManager pm = context.getPackageManager();
+        // Otherwise we have the package name passed from the method.
+        else {
+            packageName = pkgName;
+        }
         // Check if the provided package is a system app.
         if (packageName != null) {
             try {
                 PackageInfo info = pm.getPackageInfo(packageName, 0);
                 return (info != null) && (info.applicationInfo != null) &&
-                        ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
+                    ((info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0);
             } catch (NameNotFoundException e) {
                 return false;
             }
@@ -298,6 +324,7 @@ public class PackageManagerHelper {
             return false;
         }
     }
+
 
     /**
      * Returns true if the intent is a valid launch intent for a launcher activity

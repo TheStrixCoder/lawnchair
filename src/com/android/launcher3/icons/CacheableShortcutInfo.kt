@@ -24,7 +24,8 @@ import android.content.pm.ShortcutInfo
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import android.util.Log
-import com.android.launcher3.BuildConfig
+import com.android.launcher3.BuildConfigs
+import com.android.launcher3.BuildConfigs.WIDGETS_ENABLED
 import com.android.launcher3.LauncherAppState
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
 import com.android.launcher3.icons.cache.BaseIconCache
@@ -51,7 +52,7 @@ class CacheableShortcutInfo(val shortcutInfo: ShortcutInfo, val appInfo: Applica
          */
         @JvmStatic
         fun getIcon(context: Context, shortcutInfo: ShortcutInfo, density: Int): Drawable? {
-            if (!BuildConfig.WIDGETS_ENABLED) {
+            if (!WIDGETS_ENABLED) {
                 return null
             }
             try {
@@ -98,17 +99,17 @@ object CacheableShortcutCachingLogic : CachingLogic<CacheableShortcutInfo> {
 
     override fun getUser(info: CacheableShortcutInfo): UserHandle = info.shortcutInfo.userHandle
 
-    override fun getLabel(info: CacheableShortcutInfo): CharSequence? = info.shortcutInfo.shortLabel
+    override fun getLabel(info: CacheableShortcutInfo): CharSequence = info.shortcutInfo.shortLabel ?: ""
 
     override fun getApplicationInfo(info: CacheableShortcutInfo) = info.appInfo.getInfo()
 
-    override fun loadIcon(context: Context, cache: BaseIconCache, info: CacheableShortcutInfo) =
+    fun loadIcon(context: Context, info: CacheableShortcutInfo): BitmapInfo =
         LauncherIcons.obtain(context).use { li ->
             CacheableShortcutInfo.getIcon(
-                    context,
-                    info.shortcutInfo,
-                    LauncherAppState.getIDP(context).fillResIconDpi,
-                )
+                context,
+                info.shortcutInfo,
+                LauncherAppState.getIDP(context).fillResIconDpi,
+            )
                 ?.let { d ->
                     li.createBadgedIconBitmap(
                         d,
@@ -117,14 +118,30 @@ object CacheableShortcutCachingLogic : CachingLogic<CacheableShortcutInfo> {
                 } ?: BitmapInfo.LOW_RES_INFO
         }
 
+    override fun loadIcon(
+        context: Context,
+        cache: BaseIconCache,
+        info: CacheableShortcutInfo,
+    ): BitmapInfo =
+        LauncherIcons.obtain(context).use { li ->
+            CacheableShortcutInfo.getIcon(
+                context,
+                info.shortcutInfo,
+                LauncherAppState.getIDP(context).fillResIconDpi,
+            )
+                ?.let { d ->
+                    li.createBadgedIconBitmap(
+                        d,
+                        IconOptions().setExtractedColor(Themes.getColorAccent(context)),
+                    )
+                } ?: BitmapInfo.LOW_RES_INFO
+        }
+
+
     override fun getFreshnessIdentifier(
         item: CacheableShortcutInfo,
-        provider: IconProvider,
-    ): String? =
-        // Manifest shortcuts get updated on every reboot. Don't include their change timestamp as
-        // it gets covered by the app's version
-        (if (item.shortcutInfo.isDeclaredInManifest) ""
-        else item.shortcutInfo.lastChangedTimestamp.toString()) +
-            "-" +
-            provider.getStateForApp(getApplicationInfo(item))
+        iconProvider: IconProvider,
+    ): String? {
+        TODO("Not yet implemented")
+    }
 }

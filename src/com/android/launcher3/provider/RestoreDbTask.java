@@ -31,8 +31,6 @@ import static com.android.launcher3.LauncherSettings.Favorites.ITEM_TYPE_APPWIDG
 import static com.android.launcher3.provider.LauncherDbUtils.dropTable;
 import static com.android.launcher3.widget.LauncherWidgetHolder.APPWIDGET_HOST_ID;
 
-import static java.util.stream.Collectors.toList;
-
 import android.app.backup.BackupManager;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetManager;
@@ -70,7 +68,6 @@ import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.pm.UserCache;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
 import com.android.launcher3.util.ApiWrapper;
 import com.android.launcher3.util.ContentWriter;
 import com.android.launcher3.util.IntArray;
@@ -202,7 +199,7 @@ public class RestoreDbTask {
     public static boolean performRestore(Context context, ModelDbController controller) {
         SQLiteDatabase db = controller.getDb();
         FileLog.d(TAG, "performRestore: starting restore from db");
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             RestoreDbTask task = new RestoreDbTask();
             BackupManager backupManager = new BackupManager(context);
             LauncherRestoreEventLogger restoreEventLogger = LauncherRestoreEventLogger.Companion.newInstance(context);
@@ -602,7 +599,7 @@ public class RestoreDbTask {
                         getTelephonyIntentSQLLiteSelection(activityOverrides.keySet())),
                 new String[] { String.valueOf(ITEM_TYPE_APPLICATION), String.valueOf(currentUser) },
                 null, null, null);
-                SQLiteTransaction t = new SQLiteTransaction(db)) {
+                LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             final int idIndex = c.getColumnIndexOrThrow(Favorites._ID);
             final int intentIndex = c.getColumnIndexOrThrow(Favorites.INTENT);
             while (c.moveToNext()) {

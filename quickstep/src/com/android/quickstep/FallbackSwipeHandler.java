@@ -170,7 +170,7 @@ public class FallbackSwipeHandler extends
         Intent intent = new Intent(mGestureState.getHomeIntent());
         var runningTask = TopTaskTracker.INSTANCE.get(mContext).getCachedTopTask(true);
         if (gestureContractAnimationFactory != null && runningTaskTarget != null && runningTask.getTaskId() == runningTaskTarget.taskId) {
-            gestureContractAnimationFactory.addGestureContract(intent, runningTask.mAllCachedTasks.get(0));
+            gestureContractAnimationFactory.addGestureContract(intent, runningTaskTarget.taskInfo);
         }
         startHomeIntentSafely(mContext, intent, options.toBundle(), reason);
     }

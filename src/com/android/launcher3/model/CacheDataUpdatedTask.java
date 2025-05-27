@@ -20,7 +20,7 @@ import android.os.UserHandle;
 
 import androidx.annotation.NonNull;
 
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.icons.IconCache;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
@@ -31,7 +31,7 @@ import java.util.HashSet;
 /**
  * Handles changes due to cache updates.
  */
-public class CacheDataUpdatedTask implements ModelUpdateTask {
+public class CacheDataUpdatedTask implements LauncherModel.ModelUpdateTask {
 
     public static final int OP_CACHE_UPDATE = 1;
     public static final int OP_SESSION_UPDATE = 2;

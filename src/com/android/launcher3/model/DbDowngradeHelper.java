@@ -22,7 +22,7 @@ import android.util.Log;
 import android.util.SparseArray;
 
 import com.android.launcher3.R;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
+import com.android.launcher3.provider.LauncherDbUtils;
 import com.android.launcher3.util.IOUtils;
 
 import org.json.JSONArray;
@@ -64,7 +64,7 @@ public class DbDowngradeHelper {
             Collections.addAll(allCommands, commands);
         }
 
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             for (String sql : allCommands) {
                 db.execSQL(sql);
             }

@@ -34,6 +34,7 @@ import androidx.annotation.WorkerThread;
 
 import com.android.launcher3.dagger.ApplicationContext;
 import com.android.launcher3.dagger.LauncherAppSingleton;
+import com.android.launcher3.dagger.LauncherBaseAppComponent;
 import com.android.launcher3.util.DaggerSingletonObject;
 import com.android.launcher3.util.DaggerSingletonTracker;
 import com.android.launcher3.util.SafeCloseable;
@@ -55,7 +56,7 @@ public class AsyncClockEventDelegate extends ClockEventDelegate
         implements OnChangeListener, SafeCloseable {
 
     public static final DaggerSingletonObject<AsyncClockEventDelegate> INSTANCE =
-            new DaggerSingletonObject<>(QuickstepBaseAppComponent::getAsyncClockEventDelegate);
+            new DaggerSingletonObject<>(LauncherBaseAppComponent::getAsyncClockEventDelegate);
 
     private final Context mContext;
     private final SettingsCache mSettingsCache;

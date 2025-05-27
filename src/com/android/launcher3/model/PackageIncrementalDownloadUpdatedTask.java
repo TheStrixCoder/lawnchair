@@ -19,7 +19,7 @@ import android.os.UserHandle;
 
 import androidx.annotation.NonNull;
 
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Handles updates due to incremental download progress updates.
  */
-public class PackageIncrementalDownloadUpdatedTask implements ModelUpdateTask {
+public class PackageIncrementalDownloadUpdatedTask implements LauncherModel.ModelUpdateTask {
 
     @NonNull
     private final UserHandle mUser;

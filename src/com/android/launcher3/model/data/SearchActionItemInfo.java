@@ -25,7 +25,6 @@ import android.os.UserHandle;
 
 import androidx.annotation.Nullable;
 
-import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.icons.LauncherIcons;
@@ -134,19 +133,7 @@ public class SearchActionItemInfo extends ItemInfoWithIcon {
     public ItemInfoWithIcon clone() {
         return new SearchActionItemInfo(this);
     }
-
-    public ItemInfo buildProto(FolderInfo fInfo) {
-        SearchActionItem.Builder itemBuilder = SearchActionItem.newBuilder()
-                .setPackageName(mFallbackPackageName);
-
-        if (!mIsPersonalTitle) {
-            itemBuilder.setTitle(title.toString());
-        }
-        return getDefaultItemInfoBuilder()
-                .setSearchActionItem(itemBuilder)
-                .setContainerInfo(getContainerInfo())
-                .build();
-    }
+    
 
     /**
      * Returns true if result supports drag/drop to home screen
@@ -171,15 +158,12 @@ public class SearchActionItemInfo extends ItemInfoWithIcon {
         model.enqueueModelUpdateTask(new LauncherModel.ModelUpdateTask() {
             @Override
             public void execute(ModelTaskController app, BgDataModel dataModel, AllAppsList apps) {
-
-                model.updateAndBindWorkspaceItem(() -> {
-                    PackageItemInfo pkgInfo = new PackageItemInfo(getIntentPackageName(), user);
-                    app.getApp().getIconCache().getTitleAndIconForApp(pkgInfo, false);
-                    try (LauncherIcons li = LauncherIcons.obtain(app.getApp().getContext())) {
-                        info.bitmap = li.badgeBitmap(info.bitmap.icon, pkgInfo.bitmap);
-                    }
-                    return info;
-                });
+                PackageItemInfo pkgInfo = new PackageItemInfo(getIntentPackageName(), user);
+                app.getApp().getIconCache().getTitleAndIconForApp(pkgInfo, false);
+                try (LauncherIcons li = LauncherIcons.obtain(app.getApp().getContext())) {
+                    info.bitmap = li.badgeBitmap(info.bitmap.icon, pkgInfo.bitmap);
+                }
+                model.updateAndBindWorkspaceItem(info,info.getDeepShortcutInfo());
             }
         });
         return info;

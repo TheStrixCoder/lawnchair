@@ -16,6 +16,7 @@
 package com.android.launcher3.taskbar.allapps;
 
 import static com.android.app.animation.Interpolators.EMPHASIZED;
+import static com.android.launcher3.Flags.enablePredictiveBackGesture;
 import static com.android.launcher3.touch.AllAppsSwipeController.ALL_APPS_FADE_MANUAL;
 import static com.android.launcher3.touch.AllAppsSwipeController.SCRIM_FADE_MANUAL;
 

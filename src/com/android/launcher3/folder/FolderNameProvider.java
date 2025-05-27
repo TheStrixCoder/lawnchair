@@ -28,7 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 
 import com.android.launcher3.LauncherAppState;
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.model.AllAppsList;
@@ -192,7 +192,7 @@ public class FolderNameProvider implements ResourceBasedOverride {
         nameInfos.setLabel(labels.length - 1, label, 1.0f);
     }
 
-    private class FolderNameWorker implements ModelUpdateTask {
+    private class FolderNameWorker implements LauncherModel.ModelUpdateTask {
 
         @Override
         public void execute(@NonNull ModelTaskController taskController,

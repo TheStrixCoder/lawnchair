@@ -62,9 +62,8 @@ public interface LauncherOverlayManager extends Application.ActivityLifecycleCal
 
     @Override
     default void onActivitySaveInstanceState(Activity activity, Bundle bundle) { }
-
-    @Override
-    default void onActivityDestroyed(Activity activity) { }
+    
+    default void onActivityDestroyed() { }
 
     interface LauncherOverlay extends LauncherOverlayTouchProxy{
 

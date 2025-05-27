@@ -21,6 +21,7 @@ import android.content.Context;
 import com.android.launcher3.contextualeducation.ContextualEduStatsManager;
 import com.android.launcher3.graphics.IconShape;
 import com.android.launcher3.model.ItemInstallQueue;
+import com.android.launcher3.model.WellbeingModel;
 import com.android.launcher3.pm.InstallSessionHelper;
 import com.android.launcher3.util.ApiWrapper;
 import com.android.launcher3.util.DaggerSingletonTracker;
@@ -33,6 +34,9 @@ import com.android.launcher3.util.SettingsCache;
 import com.android.launcher3.util.VibratorWrapper;
 import com.android.launcher3.util.window.RefreshRateTracker;
 import com.android.launcher3.widget.custom.CustomWidgetManager;
+import com.android.quickstep.OverviewComponentObserver;
+import com.android.quickstep.SystemUiProxy;
+import com.android.quickstep.util.AsyncClockEventDelegate;
 
 import dagger.BindsInstance;
 
@@ -60,6 +64,14 @@ public interface LauncherBaseAppComponent {
     PluginManagerWrapper getPluginManagerWrapper();
     VibratorWrapper getVibratorWrapper();
     MSDLPlayerWrapper getMSDLPlayerWrapper();
+
+    WellbeingModel getWellbeingModel();
+
+    AsyncClockEventDelegate getAsyncClockEventDelegate();
+
+    SystemUiProxy getSystemUiProxy();
+
+    OverviewComponentObserver getOverviewComponentObserver();
 
     /** Builder for LauncherBaseAppComponent. */
     interface Builder {

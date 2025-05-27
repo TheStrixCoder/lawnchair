@@ -36,9 +36,8 @@ import androidx.annotation.NonNull;
 
 import com.android.launcher3.InvariantDeviceProfile;
 import com.android.launcher3.LauncherAppState;
-import com.android.launcher3.LauncherModel.CallbackTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
-import com.android.launcher3.Utilities;
 import com.android.launcher3.Workspace;
 import com.android.launcher3.celllayout.CellPosMapper;
 import com.android.launcher3.config.FeatureFlags;
@@ -63,9 +62,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -279,7 +280,7 @@ public class BaseLauncherBinder {
         });
     }
 
-    protected void executeCallbacksTask(CallbackTask task, Executor executor) {
+    protected void executeCallbacksTask(LauncherModel.CallbackTask task, Executor executor) {
         executor.execute(() -> {
             if (mMyBindingId != mBgDataModel.lastBindId) {
                 Log.d(TAG, "Too many consecutive reloads, skipping obsolete data-bind");
@@ -461,7 +462,7 @@ public class BaseLauncherBinder {
             }
         }
 
-        protected void executeCallbacksTask(CallbackTask task, Executor executor) {
+        protected void executeCallbacksTask(LauncherModel.CallbackTask task, Executor executor) {
             executor.execute(() -> {
                 if (mMyBindingId != mBgDataModel.lastBindId) {
                     Log.d(TAG, "Too many consecutive reloads, skipping obsolete data-bind");
@@ -487,63 +488,7 @@ public class BaseLauncherBinder {
                 mCurrentScreenIds.add(Workspace.FIRST_SCREEN_ID);
             }
         }
-
-        /**
-         * Binds the currently loaded items in the Data Model. Also signals to the
-         * Callbacks[]
-         * that these items have been bound and their respective screens are ready to be
-         * shown.
-         *
-         * If this method is called after all the items on the workspace screen have
-         * already been
-         * loaded, it will bind all workspace items immediately, and
-         * bindOtherWorkspacePages() will
-         * not bind any items.
-         */
-        protected void bindCurrentWorkspacePages(boolean isBindSync) {
-            // Save a copy of all the bg-thread collections
-            ArrayList<ItemInfo> workspaceItems;
-            ArrayList<LauncherAppWidgetInfo> appWidgets;
-            ArrayList<FixedContainerItems> fciList = new ArrayList<>();
-            final int workspaceItemCount;
-            synchronized (mBgDataModel) {
-                workspaceItems = new ArrayList<>(mBgDataModel.workspaceItems);
-                appWidgets = new ArrayList<>(mBgDataModel.appWidgets);
-                if (!FeatureFlags.CHANGE_MODEL_DELEGATE_LOADING_ORDER.get()) {
-                    mBgDataModel.extraItems.forEach(fciList::add);
-                }
-                workspaceItemCount = mBgDataModel.itemsIdMap.size();
-            }
-
-            workspaceItems.forEach(it -> mBoundItemIds.add(it.id));
-            appWidgets.forEach(it -> mBoundItemIds.add(it.id));
-            if (!FeatureFlags.CHANGE_MODEL_DELEGATE_LOADING_ORDER.get()) {
-                fciList.forEach(item -> executeCallbacksTask(c -> c.bindExtraContainerItems(item), mUiExecutor));
-            }
-
-            sortWorkspaceItemsSpatially(mApp.getInvariantDeviceProfile(), workspaceItems);
-
-            // Tell the workspace that we're about to start binding items
-            executeCallbacksTask(c -> {
-                c.clearPendingBinds();
-                c.startBinding();
-            }, mUiExecutor);
-
-            // Bind workspace screens
-            executeCallbacksTask(c -> c.bindScreens(mOrderedScreenIds), mUiExecutor);
-
-            bindWorkspaceItems(workspaceItems);
-            bindAppWidgets(appWidgets);
-            executeCallbacksTask(c -> {
-                MODEL_EXECUTOR.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND);
-
-                RunnableList onCompleteSignal = new RunnableList();
-                onCompleteSignal.executeAllAndDestroy();
-                c.onInitialBindComplete(mCurrentScreenIds, new RunnableList(), onCompleteSignal,
-                        workspaceItemCount, isBindSync);
-            }, mUiExecutor);
-        }
-
+        
         protected void bindOtherWorkspacePages() {
             // Save a copy of all the bg-thread collections
             ArrayList<ItemInfo> workspaceItems;

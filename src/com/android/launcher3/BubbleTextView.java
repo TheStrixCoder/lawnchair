@@ -23,7 +23,7 @@ import static android.graphics.fonts.FontStyle.FONT_WEIGHT_NORMAL;
 import static com.android.launcher3.graphics.PreloadIconDrawable.newPendingIcon;
 import static android.text.Layout.Alignment.ALIGN_NORMAL;
 
-import static com.android.launcher3.Flags.enableContrastTiles;
+
 import static com.android.launcher3.Flags.enableCursorHoverStates;
 import static com.android.launcher3.graphics.PreloadIconDrawable.newPendingIcon;
 import static com.android.launcher3.icons.BitmapInfo.FLAG_NO_BADGE;
@@ -302,22 +302,21 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
                 defaultIconSize);
         a.recycle();
 
-        mRunningAppIndicatorSize = new Size(
-                getResources().getDimensionPixelSize(R.dimen.taskbar_running_app_indicator_width),
-                getResources().getDimensionPixelSize(R.dimen.taskbar_running_app_indicator_height));
-        mMinimizedAppIndicatorSize = new Size(
-                getResources().getDimensionPixelSize(R.dimen.taskbar_minimized_app_indicator_width),
-                getResources().getDimensionPixelSize(
-                        R.dimen.taskbar_minimized_app_indicator_height));
-        mRunningAppIndicatorTopMargin = getResources().getDimensionPixelSize(
+        mRunningAppIndicatorWidth =
+            getResources().getDimensionPixelSize(R.dimen.taskbar_running_app_indicator_width);
+        mMinimizedAppIndicatorWidth =
+            getResources().getDimensionPixelSize(R.dimen.taskbar_minimized_app_indicator_width);
+        mRunningAppIndicatorHeight =
+            getResources().getDimensionPixelSize(R.dimen.taskbar_running_app_indicator_height);
+        mRunningAppIndicatorTopMargin =
+            getResources().getDimensionPixelSize(
                 R.dimen.taskbar_running_app_indicator_top_margin);
-        mMinimizedAppIndicatorTopMargin = getResources().getDimensionPixelSize(
-                R.dimen.taskbar_minimized_app_indicator_top_margin);
+
         mRunningAppIndicatorPaint = new Paint();
         mRunningAppIndicatorColor = getResources().getColor(
-                R.color.taskbar_running_app_indicator_color, context.getTheme());
+            R.color.taskbar_running_app_indicator_color, context.getTheme());
         mMinimizedAppIndicatorColor = getResources().getColor(
-                R.color.taskbar_minimized_app_indicator_color, context.getTheme());
+            R.color.taskbar_minimized_app_indicator_color, context.getTheme());
 
         mLongPressHelper = new CheckLongPressHelper(this);
 
@@ -398,9 +397,6 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     @UiThread
     public void applyFromWorkspaceItem(WorkspaceItemInfo info) {
         applyFromWorkspaceItem(info, /* animate = */ false, /* staggerIndex = */ 0);
-        if (info != null) {
-            mGestureListener = new IconGestureListener(mContext, pref2, info);
-        }
     }
 
     @UiThread
@@ -757,7 +753,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
             final int scrollX = getScrollX();
             final int scrollY = getScrollY();
             canvas.translate(scrollX, scrollY);
-            mDotRenderer.draw(canvas, mDotParams, mDotInfo == null ? -1 : mDotInfo.getNotificationCount());
+            mDotRenderer.draw(canvas, mDotParams);
             canvas.translate(-scrollX, -scrollY);
         }
     }
@@ -1020,7 +1016,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
     public boolean shouldDrawAppContrastTile() {
         return mDisplay == DISPLAY_WORKSPACE && shouldTextBeVisible()
                 && PillColorProvider.getInstance(getContext()).isMatchaEnabled()
-                && enableContrastTiles() && !TextUtils.isEmpty(getText());
+                && Flags.enableContrastTiles() && !TextUtils.isEmpty(getText());
     }
 
     public void setTextVisibility(boolean visible) {
@@ -1469,8 +1465,7 @@ public class BubbleTextView extends TextView implements ItemInfoUpdateReceiver,
         return () -> {
         };
     }
-
-    @Override
+    
     public void resetIconScale(boolean shouldReset) {
         if (shouldReset) {
             resetIconScale();

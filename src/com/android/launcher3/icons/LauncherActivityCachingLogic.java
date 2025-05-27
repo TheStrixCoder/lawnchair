@@ -19,14 +19,17 @@ package com.android.launcher3.icons;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.graphics.drawable.Drawable;
 import android.os.UserHandle;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.R;
+import com.android.launcher3.icons.cache.BaseIconCache;
 import com.android.launcher3.icons.cache.CachingLogic;
 import com.android.launcher3.util.ResourceBasedOverride;
 
@@ -62,13 +65,26 @@ public class LauncherActivityCachingLogic
         return object.getLabel();
     }
 
+    @Nullable
+    @Override
+    public ApplicationInfo getApplicationInfo(@NonNull LauncherActivityInfo object) {
+        return null;
+    }
+
     @NonNull
     @Override
-    public BitmapInfo loadIcon(@NonNull Context context, @NonNull LauncherActivityInfo object) {
+    public BitmapInfo loadIcon(@NonNull Context context, @NonNull BaseIconCache cache, @NonNull LauncherActivityInfo object) {
         try (LauncherIcons li = LauncherIcons.obtain(context)) {
             return li.createBadgedIconBitmap(LauncherAppState.getInstance(context)
-                    .getIconProvider().getIcon(object, li.mFillResIconDpi),
+                    .getIconProvider().getIcon(object, li.mFullResIconDpi),
                 new BaseIconFactory.IconOptions().setUser(object.getUser()));
         }
     }
+
+    @Nullable
+    @Override
+    public String getFreshnessIdentifier(@NonNull LauncherActivityInfo item, @NonNull IconProvider iconProvider) {
+        return "";
+    }
+    
 }

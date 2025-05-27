@@ -26,6 +26,7 @@ import android.content.res.Resources;
 
 import androidx.annotation.VisibleForTesting;
 
+import com.android.launcher3.Launcher;
 import com.android.launcher3.Utilities;
 import com.patrykmichalik.opto.core.PreferenceExtensionsKt;
 
@@ -42,7 +43,9 @@ import app.lawnchair.preferences2.PreferenceManager2;
  */
 public final class FeatureFlags {
 
-        private FeatureFlags() {
+    public static final boolean QSB_ON_FIRST_SCREEN = false;
+
+    private FeatureFlags() {
         }
 
         public static boolean showFlagTogglerUi(Context context) {
@@ -101,10 +104,14 @@ public final class FeatureFlags {
                         "ENABLE_ALL_APPS_SEARCH_IN_TASKBAR", ENABLED,
                         "Enables Search box in Taskbar All Apps.");
 
-        public static final BooleanFlag SECONDARY_DRAG_N_DROP_TO_PIN = getDebugFlag(270395140,
-                        "SECONDARY_DRAG_N_DROP_TO_PIN", DISABLED,
-                        "Enable dragging and dropping to pin apps within secondary display");
+    public static final BooleanFlag SEPARATE_RECENTS_ACTIVITY = getDebugFlag(270392980,
+        "SEPARATE_RECENTS_ACTIVITY", DISABLED,
+        "Uses a separate recents activity instead of using the integrated recents+Launcher UI");
 
+    // TODO(Block 22): Clean up flags
+    public static final BooleanFlag ENABLE_WIDGET_TRANSITION_FOR_RESIZING = getDebugFlag(268553314,
+        "ENABLE_WIDGET_TRANSITION_FOR_RESIZING", DISABLED,
+        "Enable widget transition animation when resizing the widgets");
     public static final boolean ENABLE_TASKBAR_NAVBAR_UNIFICATION =
             enableTaskbarNavbarUnification() && (!isPhone() || enableTaskbarOnPhones());
 
@@ -130,9 +137,7 @@ public final class FeatureFlags {
                         "Enables generating the reorder using a set of parameters");
 
         // TODO(Block 12): Clean up flags
-        public static final BooleanFlag ENABLE_MULTI_INSTANCE = getDebugFlag(270396680,
-                        "ENABLE_MULTI_INSTANCE", DISABLED,
-                        "Enables creation and filtering of multiple task instances in overview");
+
 
         // TODO(Block 13): Clean up flags
         public static final BooleanFlag ENABLE_DEVICE_SEARCH_PERFORMANCE_LOGGING = getReleaseFlag(
@@ -142,8 +147,6 @@ public final class FeatureFlags {
         // TODO(Block 14): Cleanup flags
         public static final BooleanFlag NOTIFY_CRASHES = getDebugFlag(270393108, "NOTIFY_CRASHES",
                         DISABLED, "Sends a notification whenever launcher encounters an uncaught exception.");
-
-        public static final boolean ENABLE_TASKBAR_NAVBAR_UNIFICATION = !isPhone();
 
         private static boolean isPhone() {
                 final boolean isPhone;
@@ -190,7 +193,11 @@ public final class FeatureFlags {
                         "ENABLE_LAUNCH_FROM_STAGED_APP", ENABLED,
                         "Enable the ability to tap a staged app during split select to launch it in full "
                                         + "screen");
-
+    private static final BooleanFlag ENABLE_TASKBAR_PINNING = getDebugFlag(296231746,
+        "ENABLE_TASKBAR_PINNING", DISABLED,
+        "Enables taskbar pinning to allow user to switch between transient and persistent "
+            + "taskbar flavors");
+    
         public static boolean enableTaskbarPinning() {
                 return ENABLE_TASKBAR_PINNING.get() || Flags.enableTaskbarPinning();
         }
@@ -247,9 +254,7 @@ public final class FeatureFlags {
             "USE_LOCAL_ICON_OVERRIDES", ENABLED,
             "Use inbuilt monochrome icons if app doesn't provide one");
 
-        public static final BooleanFlag USE_LOCAL_ICON_OVERRIDES = getDebugFlag(270394973,
-                        "USE_LOCAL_ICON_OVERRIDES", ENABLED,
-                        "Use inbuilt monochrome icons if app doesn't provide one");
+
 
     // TODO(Block 29): Clean up flags
     // Aconfig migration complete for ENABLE_ALL_APPS_BUTTON_IN_HOTSEAT.
@@ -269,11 +274,6 @@ public final class FeatureFlags {
         public static final BooleanFlag ENABLE_KEYBOARD_TASKBAR_TOGGLE = getDebugFlag(281726846,
                         "ENABLE_KEYBOARD_TASKBAR_TOGGLE", ENABLED,
                         "Enables keyboard taskbar stash toggling");
-
-        // TODO(Block 30): Clean up flags
-        public static final BooleanFlag USE_SEARCH_REQUEST_TIMEOUT_OVERRIDES = getDebugFlag(270395010,
-                        "USE_SEARCH_REQUEST_TIMEOUT_OVERRIDES", DISABLED,
-                        "Use local overrides for search request timeout");
 
     public static BooleanFlag getDebugFlag(
             int bugId, String key, BooleanFlag flagState, String description) {
@@ -299,17 +299,42 @@ public final class FeatureFlags {
                         "ALL_APPS_GONE_VISIBILITY", ENABLED,
                         "Set all apps container view's hidden visibility to GONE instead of INVISIBLE.");
 
-        public static BooleanFlag getDebugFlag(
-                        int bugId, String key, BooleanFlag flagState, String description) {
-                return flagState;
-        }
+
 
         public static BooleanFlag getReleaseFlag(
                         int bugId, String key, BooleanFlag flagState, String description) {
                 return flagState;
         }
 
-        /**
+    public static boolean enableSplitContextually() {
+        return false;
+    }
+
+    public static boolean enableAppPairs() {
+        return false;
+    }
+
+    public static boolean twoLineAllApps(Context context) {
+            return false;
+    }
+
+    public static boolean topQsbOnFirstScreenEnabled(Context mContext) {
+            return false;
+    }
+
+    public static boolean showMaterialUPopup(Context context) {
+            return false;
+    }
+
+    public static boolean showDotPagination(Launcher launcher) {
+            return false;
+    }
+
+    public static boolean showDotPagination(Context context) {
+            return false;
+    }
+
+    /**
          * Enabled state for a flag
          */
         public enum BooleanFlag {

@@ -304,58 +304,6 @@ public class TouchInteractionService extends Service {
             });
         }
 
-        @BinderThread
-        @Override
-        public void updateWallpaperVisibility(int displayId, boolean visible) {
-            MAIN_EXECUTOR.execute(() -> executeForTouchInteractionService(tis ->
-                    executeForTaskbarManager(
-                            taskbarManager -> taskbarManager.setWallpaperVisible(visible))
-            ));
-        }
-
-        @BinderThread
-        @Override
-        public void checkNavBarModes(int displayId) {
-            MAIN_EXECUTOR.execute(() -> executeForTouchInteractionService(tis ->
-                    executeForTaskbarManager(
-                            taskbarManager -> taskbarManager.checkNavBarModes(displayId))));
-        }
-
-        @BinderThread
-        @Override
-        public void finishBarAnimations(int displayId) {
-            MAIN_EXECUTOR.execute(() -> executeForTouchInteractionService(
-                    tis -> executeForTaskbarManager(
-                            taskbarManager -> taskbarManager.finishBarAnimations(displayId))));
-        }
-
-        @BinderThread
-        @Override
-        public void touchAutoDim(int displayId, boolean reset) {
-            MAIN_EXECUTOR.execute(() -> executeForTouchInteractionService(
-                    tis -> executeForTaskbarManager(
-                            taskbarManager -> taskbarManager.touchAutoDim(displayId, reset))));
-        }
-
-        @BinderThread
-        @Override
-        public void transitionTo(int displayId, @BarTransitions.TransitionMode int barMode,
-                boolean animate) {
-            MAIN_EXECUTOR.execute(() -> executeForTouchInteractionService(
-                    tis -> executeForTaskbarManager(
-                            taskbarManager -> taskbarManager.transitionTo(displayId, barMode,
-                                    animate))));
-        }
-
-        @BinderThread
-        @Override
-        public void appTransitionPending(boolean pending) {
-            MAIN_EXECUTOR.execute(() -> executeForTouchInteractionService(tis ->
-                    executeForTaskbarManager(
-                            taskbarManager -> taskbarManager.appTransitionPending(pending))
-            ));
-        }
-
         /**
          * Preloads the Overview activity.
          * <p>
@@ -385,12 +333,6 @@ public class TouchInteractionService extends Service {
         }
 
         @Override
-        public void onTransitionModeUpdated(int barMode, boolean checkBarModes) {
-            executeForTaskbarManager(taskbarManager ->
-                    taskbarManager.onTransitionModeUpdated(barMode, checkBarModes));
-        }
-
-        @Override
         public void onNavButtonsDarkIntensityChanged(float darkIntensity) {
             executeForTaskbarManager(taskbarManager ->
                     taskbarManager.onNavButtonsDarkIntensityChanged(darkIntensity));
@@ -400,20 +342,6 @@ public class TouchInteractionService extends Service {
         public void onNavigationBarLumaSamplingEnabled(int displayId, boolean enable) {
             executeForTaskbarManager(taskbarManager ->
                     taskbarManager.onNavigationBarLumaSamplingEnabled(displayId, enable));
-        }
-
-        @Override
-        public void onUnbind(IRemoteCallback reply) {
-            // Run everything in the same main thread block to ensure the cleanup happens before
-            // sending the reply.
-            MAIN_EXECUTOR.execute(() -> {
-                executeForTaskbarManager(TaskbarManager::destroy);
-                try {
-                    reply.sendResult(null);
-                } catch (RemoteException e) {
-                    Log.w(TAG, "onUnbind: Failed to reply to OverviewProxyService", e);
-                }
-            });
         }
 
         private void executeForTouchInteractionService(

@@ -29,17 +29,17 @@ import com.android.launcher3.LauncherApplication
 object LauncherComponentProvider {
 
     @JvmStatic
-    fun get(c: Context): LauncherAppComponent {
+    fun get(c: Context): LauncherAppComponent? {
         val app = c.applicationContext
         if (app is LauncherApplication) return app.appComponent
 
         val inflater = LayoutInflater.from(app)
         val existingFilter = inflater.filter
         if (existingFilter is Holder) return existingFilter.component
-
+        //todo : fix this
         // Create a new component
         return Holder(
-                DaggerLauncherAppComponent.builder().appContext(app).build()
+            DaggerLauncherAppComponent.builder().appContext(app).build()
                     as LauncherAppComponent,
                 existingFilter,
             )

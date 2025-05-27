@@ -37,7 +37,7 @@ import androidx.annotation.NonNull;
 
 import com.android.launcher3.Flags;
 import com.android.launcher3.LauncherAppState;
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.LauncherSettings.Favorites;
 import com.android.launcher3.R;
@@ -75,7 +75,7 @@ import app.lawnchair.preferences.PreferenceManager;
  * or when a user availability changes.
  */
 @SuppressWarnings("NewApi")
-public class PackageUpdatedTask implements ModelUpdateTask {
+public class PackageUpdatedTask implements LauncherModel.ModelUpdateTask {
 
     // TODO(b/290090023): Set to false after root causing is done.
     private static final String TAG = "PackageUpdatedTask";
@@ -345,8 +345,6 @@ public class PackageUpdatedTask implements ModelUpdateTask {
                                     itemInfo.runtimeStatusFlags ^= FLAG_ARCHIVED;
                                     infoUpdated = true;
                                 }
-                            } catch (Throwable t) {
-                                // ignore
                             }
                             if (itemInfo.itemType == Favorites.ITEM_TYPE_APPLICATION) {
                                 if (activities != null && !activities.isEmpty()) {

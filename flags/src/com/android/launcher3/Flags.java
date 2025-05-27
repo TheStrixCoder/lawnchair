@@ -101,6 +101,9 @@ public final class Flags {
     /** @hide */
     public static final String FLAG_USE_ACTIVITY_OVERLAY = "com.android.launcher3.use_activity_overlay";
 
+    public static final String FLAG_SHOW_TASKBAR_PINNING_POPUP_FROM_ANYWHERE = "com.android.launcher3.show_taskbar_pinning_popup_from_anywhere";
+    public static final String FLAGS_ENABLE_RECENTS_WINDOW_PROTOLOG = "com.android.launcher3.enable_recents_window_protolog";
+
     public static boolean enableAddAppWidgetViaConfigActivityV2() {
         return FEATURE_FLAGS.enableAddAppWidgetViaConfigActivityV2();
     }
@@ -135,6 +138,10 @@ public final class Flags {
 
     public static boolean enableGeneratedPreviews() {
         return FEATURE_FLAGS.enableGeneratedPreviews();
+    }
+    
+    public static boolean enableRecentsWindowProtoLog() {
+        return FEATURE_FLAGS.enableRecentsWindowProtoLog();
     }
 
     public static boolean enableGridMigrationFix() {
@@ -179,6 +186,10 @@ public final class Flags {
 
     public static boolean enableRebootUnlockAnimation() {
         return FEATURE_FLAGS.enableRebootUnlockAnimation();
+    }
+    
+    public static boolean showTaskbarPinningPopupFromAnywhere() {
+        return FEATURE_FLAGS.showTaskbarPinningPopupFromAnywhere();
     }
 
     public static boolean enableRecentsInTaskbar() {
@@ -299,4 +310,123 @@ public final class Flags {
 
     private static FeatureFlags FEATURE_FLAGS = new FeatureFlagsImpl();
 
+    public static boolean ignoreThreeFingerTrackpadForNavHandleLongPress() {
+        return false;
+    }
+    
+    public static boolean enableOverviewCommandHelperTimeout() {
+        return false;
+    }
+    
+    public static boolean enableLargeDesktopWindowingTile() {
+        return false;
+    }
+
+    public static boolean coordinateWorkspaceScale() {
+        return false;
+    }
+    
+    public static boolean enableHoverOfChildElementsInTaskview() {
+        return false;
+    }
+    
+    public static boolean oneGridSpecs() {
+        return false;
+    }
+    
+    public static boolean useNewIconForArchivedApps() {
+        return false;
+    }
+    
+    public static boolean enableStateManagerProtoLog() {
+        return false;
+    }
+    
+    public static boolean useSystemRadiusForAppWidgets() {
+        return false;
+    }
+    
+    public static boolean taskbarRecentsLayoutTransition() {
+        return false;
+    }
+    
+    public static boolean enableDesktopWindowingCarouselDetach() {
+        return false;
+    }
+    
+    public static boolean enableDesktopTaskAlphaAnimation() {
+        return false;
+    }
+    
+    public static boolean enableContainerReturnAnimations() {
+        return false;
+    }
+    
+    public static boolean taskbarOverflow() {
+        return false;
+    }
+    
+    public static boolean enableActiveGestureProtoLog() {
+        return false;
+    }
+
+    public static boolean msdlFeedback() {
+        return false;
+    }
+
+    public static boolean enableAllAppsButtonInHotseat() {
+        return false;
+    }
+
+    public static boolean allAppsSheetForHandheld() {
+        return false;
+    }
+
+    public static boolean enableContrastTiles() {
+        return false;
+    }
+
+    public static boolean enableDismissPredictionUndo() {
+        return false;
+    }
+
+    public static boolean enableLauncherOverviewInWindow() {
+        return false;
+    }
+
+    public static boolean enableFlexibleSplit() {
+        return false;
+    }
+
+    public static boolean letterFastScroller() {
+        return false;
+    }
+
+    public static boolean multilineSearchBar() {
+        return false;
+    }
+
+    public static boolean enableTieredWidgetsByDefaultInPicker() {
+        return false;
+    }
+
+    public static boolean workSchedulerInWorkProfile() {
+        return false;
+    }
+
+    public static boolean gridMigrationRefactor() {
+        return false;
+    }
+
+    public static boolean accessibilityScrollOnAllapps() {
+        return false;
+    }
+
+    public static boolean navigateToChildPreference() {
+        return false;
+    }
+
+    public static boolean enableMultiInstanceMenuTaskbar() {
+        return false;
+    }
 }

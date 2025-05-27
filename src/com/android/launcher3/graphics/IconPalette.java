@@ -21,8 +21,11 @@ import static com.android.launcher3.icons.GraphicsUtils.setColorAlphaBound;
 import android.app.Notification;
 import android.content.Context;
 import android.graphics.Color;
+import android.util.Log;
 
+import com.android.launcher3.R;
 import com.android.launcher3.util.Themes;
+import com.androidinternal.graphics.ColorUtils;
 
 import java.lang.IllegalArgumentException;
 
@@ -31,6 +34,8 @@ import java.lang.IllegalArgumentException;
  */
 public class IconPalette {
     private static final String TAG = "IconPalette";
+    
+    private static final boolean DEBUG = false;
 
     private static final float MIN_PRELOAD_COLOR_SATURATION = 0.2f;
     private static final float MIN_PRELOAD_COLOR_LIGHTNESS = 0.6f;

@@ -113,6 +113,9 @@ public class TaskbarManager {
     private static final Uri NAV_BAR_KIDS_MODE = Settings.Secure.getUriFor(
             Settings.Secure.NAV_BAR_KIDS_MODE);
 
+    private static final Uri USER_SETUP_COMPLETE_URI = Settings.Secure.getUriFor(
+        Settings.Secure.USER_SETUP_COMPLETE);
+
     private final Context mWindowContext;
     private final @Nullable Context mNavigationBarPanelContext;
     private WindowManager mWindowManager;

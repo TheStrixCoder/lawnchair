@@ -20,12 +20,11 @@ import static com.android.launcher3.model.data.ItemInfoWithIcon.FLAG_DISABLED_LO
 import android.content.Context;
 import android.content.pm.ShortcutInfo;
 import android.os.UserHandle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
 import com.android.launcher3.LauncherAppState;
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
 import com.android.launcher3.shortcuts.ShortcutKey;
@@ -42,7 +41,7 @@ import java.util.Iterator;
 /**
  * Task to handle changing of lock state of the user
  */
-public class UserLockStateChangedTask implements ModelUpdateTask {
+public class UserLockStateChangedTask implements LauncherModel.ModelUpdateTask {
 
     @NonNull
     private final UserHandle mUser;

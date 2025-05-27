@@ -1573,7 +1573,7 @@ public class TaskbarActivityContext extends BaseTaskbarContext {
 
         boolean isLaunchingAppPair = itemInfos.size() == 2;
         // Convert the list of ItemInfo instances to a list of ComponentKeys
-        List<ComponentKey> componentKeys = itemInfos.stream().map(ItemInfo::getComponentKey).collect(toList());
+        List<ComponentKey> componentKeys = itemInfos.stream().map(ItemInfo::getComponentKey).toList();
         recents.getSplitSelectController().findLastActiveTasksAndRunCallback(
                 componentKeys,
                 isLaunchingAppPair,

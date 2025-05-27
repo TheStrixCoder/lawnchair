@@ -465,10 +465,6 @@ public class PreviewItemManager {
             AppPairIconDrawingParams appPairParams = new AppPairIconDrawingParams(mContext, DISPLAY_FOLDER);
             p.drawable = AppPairIconGraphic.composeDrawable(api, appPairParams);
             p.drawable.setBounds(0, 0, mIconSize, mIconSize);
-        } else if (item instanceof ItemInfoWithIcon withIcon){
-            var isThemed = PreferenceManager.getInstance(mContext).getDrawerThemedIcons().get();
-            p.drawable = withIcon.newIcon(mContext, isThemed);
-            p.drawable.setBounds(0, 0, mIconSize, mIconSize);
         }
 
         p.item = item;

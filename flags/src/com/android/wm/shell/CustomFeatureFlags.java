@@ -128,6 +128,11 @@ public class CustomFeatureFlags implements FeatureFlags {
                 FeatureFlags::onlyReuseBubbledTaskWhenLaunchedFromBubble);
     }
 
+    @Override
+    public boolean enableShellTopTaskTracking() {
+        return false;
+    }
+
     public boolean isFlagReadOnlyOptimized(String flagName) {
         if (mReadOnlyFlagsSet.contains(flagName) &&
                 isOptimizationEnabled()) {

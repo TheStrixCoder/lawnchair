@@ -24,6 +24,7 @@ import android.content.Context;
 import android.graphics.Color;
 
 import com.android.launcher3.DeviceProfile;
+import com.android.launcher3.R;
 import com.android.launcher3.statemanager.BaseState;
 import com.android.quickstep.RecentsActivity;
 import com.android.launcher3.util.Themes;
@@ -142,6 +143,15 @@ public class RecentsState implements BaseState<RecentsState> {
     public int getScrimColor(RecentsActivity activity) {
         return hasFlag(FLAG_SCRIM) ? ColorTokens.OverviewScrim.resolveColor(activity)
                 : Color.TRANSPARENT;
+    }
+
+    /**
+     * For this state, what color scrim should be drawn behind overview.
+     */
+    public int getScrimColor(Context context) {
+        return hasFlag(FLAG_SCRIM)
+            ? Themes.getAttrColor(context, R.attr.overviewScrimColor)
+            : Color.TRANSPARENT;
     }
 
     public float[] getOverviewScaleAndOffset(RecentsViewContainer container) {

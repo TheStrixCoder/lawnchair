@@ -27,6 +27,7 @@ import static com.android.launcher3.Utilities.dpiFromPx;
 import static com.android.launcher3.Utilities.isEnglishLanguage;
 import static com.android.launcher3.Utilities.pxFromSp;
 import static com.android.launcher3.folder.ClippedFolderIconLayoutRule.ICON_OVERLAP_FACTOR;
+import static com.android.launcher3.icons.GraphicsUtils.getShapePath;
 import static com.android.launcher3.icons.IconNormalizer.ICON_VISIBLE_AREA_FACTOR;
 import static com.android.launcher3.testing.shared.ResourceUtils.INVALID_RESOURCE_HANDLE;
 import static com.android.launcher3.testing.shared.ResourceUtils.pxFromDp;
@@ -254,7 +255,6 @@ public class DeviceProfile {
     private final int mMinHotseatIconSpacePx;
     private final int mMinHotseatQsbWidthPx;
     private final int mMaxHotseatIconSpacePx;
-    public final int inlineNavButtonsEndSpacingPx;
     // Space required for the bubble bar between the hotseat and the edge of the
     // screen. If there's
     // not enough space, the hotseat will adjust itself for the bubble bar.
@@ -409,6 +409,9 @@ public class DeviceProfile {
         mTransientTaskbarClaimedSpace = 0;
         startAlignTaskbar = false;
         isTransientTaskbar = false;
+        mTextFactors = null;
+        preferenceManager2 = null;
+        
     }
 
     /** TODO: Once we fully migrate to staged split, remove "isMultiWindowMode" */
@@ -891,12 +894,10 @@ public class DeviceProfile {
         int countColor = counterColorOption.getColorPreferenceEntry().getLightColor().invoke(context);
 
         // This is done last, after iconSizePx is calculated above.
-        Path dotPath = GraphicsUtils.getShapePath(context, DEFAULT_DOT_SIZE);
+        Path dotPath = getShapePath(context, DEFAULT_DOT_SIZE);
 
-        mDotRendererWorkSpace = createDotRenderer(iconSizePx, dotPath, showNotificationCount, typeface, dotColor,
-                countColor, dotRendererCache);
-        mDotRendererAllApps = createDotRenderer(allAppsIconSizePx, dotPath, showNotificationCount, typeface, dotColor,
-                countColor, dotRendererCache);
+        mDotRendererWorkSpace = createDotRenderer(context, iconSizePx, dotRendererCache);
+        mDotRendererAllApps = createDotRenderer(context, allAppsIconSizePx, dotRendererCache);
     }
 
     /**
@@ -922,13 +923,8 @@ public class DeviceProfile {
         DotRenderer renderer = cache.get(size);
 
         if (renderer == null) {
-            renderer = new DotRenderer(size,
-                    dotPath,
-                    DEFAULT_DOT_SIZE,
-                    showNotificationCount,
-                    typeface,
-                    dotColor,
-                    countColor);
+            renderer = new DotRenderer(size, getShapePath(context, DEFAULT_DOT_SIZE),
+                DEFAULT_DOT_SIZE);
             cache.put(size, renderer);
         }
         return renderer;

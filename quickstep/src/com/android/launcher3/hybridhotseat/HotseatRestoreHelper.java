@@ -25,7 +25,7 @@ import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.LauncherModel;
 import com.android.launcher3.model.GridBackupTable;
 import com.android.launcher3.model.ModelDbController;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
+import com.android.launcher3.provider.LauncherDbUtils;
 
 /**
  * A helper class to manage migration revert restoration for hybrid hotseat
@@ -39,7 +39,7 @@ public class HotseatRestoreHelper {
         MODEL_EXECUTOR.execute(() -> {
             ModelDbController dbController = LauncherAppState.getInstance(context)
                     .getModel().getModelDbController();
-            try (SQLiteTransaction transaction = dbController.newTransaction()) {
+            try (LauncherDbUtils.SQLiteTransaction transaction = dbController.newTransaction()) {
                 GridBackupTable backupTable = new GridBackupTable(context, transaction.getDb());
                 backupTable.createCustomBackupTable(HYBRID_HOTSEAT_BACKUP_TABLE);
                 transaction.commit();
@@ -54,7 +54,7 @@ public class HotseatRestoreHelper {
     public static void restoreBackup(Context context) {
         MODEL_EXECUTOR.execute(() -> {
             LauncherModel model = LauncherAppState.getInstance(context).getModel();
-            try (SQLiteTransaction transaction = model.getModelDbController().newTransaction()) {
+            try (LauncherDbUtils.SQLiteTransaction transaction = model.getModelDbController().newTransaction()) {
                 if (!tableExists(transaction.getDb(), HYBRID_HOTSEAT_BACKUP_TABLE)) {
                     return;
                 }

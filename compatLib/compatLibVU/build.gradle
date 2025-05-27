@@ -7,6 +7,7 @@ android {
 }
 
 addFrameworkJar('framework-14.jar')
+addFrameworkJar('WindowManager-Shell-15.jar')
 
 dependencies {
     api projects.compatLib.compatLibVT

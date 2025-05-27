@@ -50,4 +50,6 @@ public interface FeatureFlags {
     
     
     boolean onlyReuseBubbledTaskWhenLaunchedFromBubble();
+
+    boolean enableShellTopTaskTracking();
 }

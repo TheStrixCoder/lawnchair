@@ -61,8 +61,10 @@ import androidx.annotation.WorkerThread;
 import com.android.internal.logging.InstanceId;
 import com.android.internal.util.ScreenshotRequest;
 import com.android.internal.view.AppearanceRegion;
+import com.android.launcher3.Utilities;
 import com.android.launcher3.dagger.ApplicationContext;
 import com.android.launcher3.dagger.LauncherAppSingleton;
+import com.android.launcher3.dagger.LauncherBaseAppComponent;
 import com.android.launcher3.util.DaggerSingletonObject;
 import com.android.launcher3.util.Preconditions;
 import com.android.quickstep.dagger.QuickstepBaseAppComponent;
@@ -115,6 +117,8 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import app.lawnchair.compat.LawnchairQuickstepCompat;
+
 /**
  * Holds the reference to SystemUI.
  */
@@ -123,7 +127,7 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle {
     private static final String TAG = "SystemUiProxy";
 
     public static final DaggerSingletonObject<SystemUiProxy> INSTANCE =
-            new DaggerSingletonObject<>(QuickstepBaseAppComponent::getSystemUiProxy);
+            new DaggerSingletonObject<>(LauncherBaseAppComponent::getSystemUiProxy);
 
     private static final int MSG_SET_SHELF_HEIGHT = 1;
     private static final int MSG_SET_LAUNCHER_KEEP_CLEAR_AREA_HEIGHT = 2;
@@ -244,12 +248,33 @@ public class SystemUiProxy implements ISystemUiProxy, NavHandle {
     }
 
     @Override
+    public void injectLongPress(int keyCode) {
+        if (mSystemUiProxy != null) {
+            try {
+                mSystemUiProxy.injectLongPress(keyCode);
+            } catch (RemoteException e) {
+                Log.w(TAG, "Failed call injectLongPress", e);
+            }
+        }
+    }
+
+    @Override
     public void onImeSwitcherLongPress() {
         if (mSystemUiProxy != null) {
             try {
                 mSystemUiProxy.onImeSwitcherLongPress();
             } catch (RemoteException e) {
                 Log.w(TAG, "Failed call onImeSwitcherLongPress");
+            }
+        }
+    }
+    @Override
+    public void injectPress(int keyCode) {
+        if (mSystemUiProxy != null) {
+            try {
+                mSystemUiProxy.injectPress(keyCode);
+            } catch (RemoteException e) {
+                Log.w(TAG, "Failed call injectPress", e);
             }
         }
     }

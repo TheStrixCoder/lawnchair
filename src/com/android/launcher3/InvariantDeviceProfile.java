@@ -60,6 +60,7 @@ import com.android.launcher3.provider.RestoreDbTask;
 import com.android.launcher3.testing.shared.ResourceUtils;
 import com.android.launcher3.util.DisplayController;
 import com.android.launcher3.util.DisplayController.Info;
+import com.android.launcher3.util.LockedUserState;
 import com.android.launcher3.util.MainThreadInitializedObject;
 import com.android.launcher3.util.Partner;
 import com.android.launcher3.util.ResourceHelper;
@@ -93,6 +94,8 @@ public class InvariantDeviceProfile implements SafeCloseable {
         @Retention(RetentionPolicy.SOURCE)
         @IntDef({TYPE_PHONE, TYPE_MULTI_DISPLAY, TYPE_TABLET})
         public @interface DeviceType {}
+
+    public static final String GRID_NAME_PREFS_KEY = "idp_grid_name";
 
         public static final int TYPE_PHONE = 0;
         public static final int TYPE_MULTI_DISPLAY = 1;
@@ -186,6 +189,8 @@ public class InvariantDeviceProfile implements SafeCloseable {
         public int numAllAppsRowsForCellHeightCalculation;
         public int numDatabaseAllAppsColumns;
         public @StyleRes int allAppsStyle;
+
+    public boolean isFixedLandscape = false;
 
         /**
          * Do not query directly. see {@link DeviceProfile#isScalableGrid}.
@@ -327,6 +332,9 @@ public class InvariantDeviceProfile implements SafeCloseable {
                               @DeviceType int deviceType) {
                 DeviceProfileOverrides.DBGridInfo dbGridInfo = DeviceProfileOverrides.INSTANCE.get(context)
                         .getGridInfo();
+            GridOption closestProfile = displayOption.grid;
+            // Fixed Landscape mode
+            isFixedLandscape = closestProfile.mIsFixedLandscape;
                 initGrid(context, displayInfo, displayOption, deviceType, dbGridInfo);
         }
 
@@ -900,6 +908,7 @@ public class InvariantDeviceProfile implements SafeCloseable {
                 private static final int DONT_INLINE_QSB = 0;
 
                 public final String name;
+                public final String title;
                 public final int numRows;
                 public final int numColumns;
                 public final int numSearchContainerColumns;
@@ -939,11 +948,13 @@ public class InvariantDeviceProfile implements SafeCloseable {
                 private final int mWorkspaceCellSpecsTwoPanelId;
                 private final int mAllAppsCellSpecsId;
                 private final int mAllAppsCellSpecsTwoPanelId;
+                private final boolean mIsFixedLandscape;
 
                 public GridOption(Context context, AttributeSet attrs) {
                         TypedArray a = context.obtainStyledAttributes(
                                 attrs, R.styleable.GridDisplayOption);
                         name = a.getString(R.styleable.GridDisplayOption_name);
+                        title = a.getString(R.styleable.GridDisplayOption_title);
                         numRows = a.getInt(R.styleable.GridDisplayOption_numRows, 0);
                         numColumns = a.getInt(R.styleable.GridDisplayOption_numColumns, 0);
                         numSearchContainerColumns = a.getInt(
@@ -1009,7 +1020,7 @@ public class InvariantDeviceProfile implements SafeCloseable {
 
                         cellStyle = a.getResourceId(R.styleable.GridDisplayOption_cellStyle,
                                 R.style.CellStyleDefault);
-
+                        mIsFixedLandscape = a.getBoolean(R.styleable.GridDisplayOption_isFixedLandscape, false);
                         isScalable = a.getBoolean(
                                 R.styleable.GridDisplayOption_isScalable, false);
                         devicePaddingId = a.getResourceId(

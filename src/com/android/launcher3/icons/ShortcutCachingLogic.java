@@ -20,6 +20,7 @@ import static com.android.launcher3.BuildConfigs.WIDGETS_ENABLED;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherApps;
 import android.content.pm.PackageInfo;
 import android.content.pm.ShortcutInfo;
@@ -33,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.LauncherAppState;
+import com.android.launcher3.icons.cache.BaseIconCache;
 import com.android.launcher3.icons.cache.CachingLogic;
 import com.android.launcher3.shortcuts.ShortcutKey;
 import com.android.launcher3.util.Themes;
@@ -64,7 +66,31 @@ public class ShortcutCachingLogic implements CachingLogic<ShortcutInfo> {
         return info.getShortLabel();
     }
 
+    @Nullable
     @Override
+    public ApplicationInfo getApplicationInfo(@NonNull ShortcutInfo object) {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    public BitmapInfo loadIcon(@NonNull Context context, @NonNull BaseIconCache cache, @NonNull ShortcutInfo info) {
+         try (LauncherIcons li = LauncherIcons.obtain(context)) {
+            Drawable unbadgedDrawable = ShortcutCachingLogic.getIcon(
+                context, info, LauncherAppState.getIDP(context).fillResIconDpi);
+            if (unbadgedDrawable == null)
+                return BitmapInfo.LOW_RES_INFO;
+            return li.createBadgedIconBitmap(unbadgedDrawable);
+        }
+    }
+
+    @Nullable
+    @Override
+    public String getFreshnessIdentifier(@NonNull ShortcutInfo item, @NonNull IconProvider iconProvider) {
+        return "";
+    }
+
+//    @Override
     @NonNull
     public CharSequence getDescription(@NonNull ShortcutInfo object,
             @NonNull CharSequence fallback) {
@@ -73,7 +99,7 @@ public class ShortcutCachingLogic implements CachingLogic<ShortcutInfo> {
     }
 
     @NonNull
-    @Override
+//    @Override
     public BitmapInfo loadIcon(@NonNull Context context, @NonNull ShortcutInfo info) {
         try (LauncherIcons li = LauncherIcons.obtain(context)) {
             Drawable unbadgedDrawable = ShortcutCachingLogic.getIcon(
@@ -84,7 +110,7 @@ public class ShortcutCachingLogic implements CachingLogic<ShortcutInfo> {
         }
     }
 
-    @Override
+//    @Override
     public long getLastUpdatedTime(@Nullable ShortcutInfo shortcutInfo,
             @NonNull PackageInfo info) {
         if (shortcutInfo == null) {
@@ -93,7 +119,7 @@ public class ShortcutCachingLogic implements CachingLogic<ShortcutInfo> {
         return Math.max(shortcutInfo.getLastChangedTimestamp(), info.lastUpdateTime);
     }
 
-    @Override
+//    @Override
     public boolean addToMemCache() {
         return false;
     }

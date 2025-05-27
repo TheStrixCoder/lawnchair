@@ -81,6 +81,12 @@ project(':unfold').projectDir = new File(rootDir, 'systemUI/unfold')
 include ':viewcapture'
 project(':viewcapture').projectDir = new File(rootDir, 'systemUI/viewcapture')
 
+include ':msdllib'
+project(':msdllib').projectDir = new File(rootDir, 'systemUI/msdllib')
+
+include ':contextualeducationlib'
+project(':contextualeducationlib').projectDir = new File(rootDir, 'platform_frameworks_libs_systemui/contextualeducationlib')
+
 
 include ':compatLib'
 include ':compatLib:compatLibVQ'

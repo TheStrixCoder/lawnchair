@@ -141,7 +141,11 @@ public class Hotseat extends CellLayout implements Insettable {
 
         mQsb = LayoutInflater.from(context).inflate(layoutId, this, false);
         addView(mQsb);
-
+        mIconsAlphaChannels = new MultiValueAlpha(getShortcutsAndWidgets(),
+            ALPHA_CHANNEL_CHANNELS_COUNT);
+        mIconsTranslationXFactory = new MultiPropertyFactory<>(getShortcutsAndWidgets(),
+            VIEW_TRANSLATE_X, ICONS_TRANSLATION_X_CHANNELS_COUNT, Float::sum);
+        mQsbAlphaChannels = new MultiValueAlpha(mQsb, ALPHA_CHANNEL_CHANNELS_COUNT);
         setUpBackground();
     }
 

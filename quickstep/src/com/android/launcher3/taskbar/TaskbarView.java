@@ -74,7 +74,6 @@ import com.android.wm.shell.shared.bubbles.BubbleBarLocation;
 import com.android.launcher3.views.IconButtonView;
 import com.patrykmichalik.opto.core.PreferenceExtensionsKt;
 import com.android.quickstep.DeviceConfigWrapper;
-import com.android.quickstep.util.AssistStateManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;

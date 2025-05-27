@@ -208,12 +208,12 @@ public class ActivityManagerWrapper {
     public void startRecentsActivity(Intent intent, long eventTime,
             final RecentsAnimationListener animationHandler, final Consumer<Boolean> resultCallback,
             Handler resultCallbackHandler) {
-        boolean result = startRecentsActivity(intent, eventTime, animationHandler);
+        preloadRecentsActivity(intent);
         if (resultCallback != null && resultCallbackHandler != null) {
             resultCallbackHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    resultCallback.accept(result);
+                    resultCallback.accept(true);
                 }
             });
         }
@@ -222,68 +222,68 @@ public class ActivityManagerWrapper {
     /**
      * Starts the recents activity. The caller should manage the thread on which this is called.
      */
-    public boolean startRecentsActivity(
-            Intent intent, long eventTime, RecentsAnimationListener animationHandler) {
-        try {
-            RecentsAnimationRunnerCompat runner = null;
-            if (animationHandler != null) {
-                runner = new RecentsAnimationRunnerCompat() {
-                    @Override
-                    public void onAnimationStart(IRecentsAnimationController controller,
-                                                 RemoteAnimationTarget[] apps, RemoteAnimationTarget[] wallpapers,
-                                                 Rect homeContentInsets, Rect minimizedHomeBounds) {
-                        final RecentsAnimationControllerCompat controllerCompat =
-                                new RecentsAnimationControllerCompat(controller);
-                        animationHandler.onAnimationStart(controllerCompat, apps,
-                                wallpapers, homeContentInsets, minimizedHomeBounds, new Bundle());
-                    }
-
-                    @Override
-                    public void onAnimationCanceled(int[] taskIds, TaskSnapshot[] taskSnapshots) {
-                        animationHandler.onAnimationCanceled(
-                                ThumbnailData.wrap(taskIds, taskSnapshots));
-                    }
-
-
-                    /**
-                     * compat for android 12/11/10
-                     */
-                    public void onAnimationCanceled(Object taskSnapshot) {
-                        if (LawnchairQuickstepCompat.ATLEAST_S) {
-                            animationHandler.onAnimationCanceled(
-                                    ThumbnailData.wrap(new int[]{0}, new TaskSnapshot[]{(TaskSnapshot) taskSnapshot}));
-                        } else if (LawnchairQuickstepCompat.ATLEAST_R) {
-                            ActivityManagerCompatVR compat = (ActivityManagerCompatVR) LawnchairQuickstepCompat.getActivityManagerCompat();
-                            ActivityManagerCompatVR.ThumbnailData data = compat.convertTaskSnapshotToThumbnailData(taskSnapshot);
-                            HashMap<Integer, ThumbnailData> thumbnailDatas = new HashMap<>();
-                            if (data != null) {
-                                thumbnailDatas.put(0, new ThumbnailData());
-                            }
-                            animationHandler.onAnimationCanceled(thumbnailDatas);
-                        } else {
-                            animationHandler.onAnimationCanceled(new HashMap<>());
-                        }
-                    }
-
-                    /**
-                     * compat for android 12/11
-                     */
-                    public void onTaskAppeared(RemoteAnimationTarget app) {
-                        animationHandler.onTasksAppeared(new RemoteAnimationTarget[]{app});
-                    }
-
-                    @Override
-                    public void onTasksAppeared(RemoteAnimationTarget[] apps) {
-                        animationHandler.onTasksAppeared(apps);
-                    }
-                };
-            }
-            LawnchairQuickstepCompat.getActivityManagerCompat().startRecentsActivity(intent, eventTime, runner);
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
-    }
+//    public boolean startRecentsActivity(
+//            Intent intent, long eventTime, RecentsAnimationListener animationHandler) {
+//        try {
+//            RecentsAnimationRunnerCompat runner = null;
+//            if (animationHandler != null) {
+//                runner = new RecentsAnimationRunnerCompat() {
+//                    @Override
+//                    public void onAnimationStart(IRecentsAnimationController controller,
+//                                                 RemoteAnimationTarget[] apps, RemoteAnimationTarget[] wallpapers,
+//                                                 Rect homeContentInsets, Rect minimizedHomeBounds) {
+//                        final RecentsAnimationControllerCompat controllerCompat =
+//                                new RecentsAnimationControllerCompat(controller);
+//                        animationHandler.onAnimationStart(controllerCompat, apps,
+//                                wallpapers, homeContentInsets, minimizedHomeBounds, new Bundle());
+//                    }
+//
+//                    @Override
+//                    public void onAnimationCanceled(int[] taskIds, TaskSnapshot[] taskSnapshots) {
+//                        animationHandler.onAnimationCanceled(
+//                                ThumbnailData.wrap(taskIds, taskSnapshots));
+//                    }
+//
+//
+//                    /**
+//                     * compat for android 12/11/10
+//                     */
+//                    public void onAnimationCanceled(Object taskSnapshot) {
+//                        if (LawnchairQuickstepCompat.ATLEAST_S) {
+//                            animationHandler.onAnimationCanceled(
+//                                    ThumbnailData.wrap(new int[]{0}, new TaskSnapshot[]{(TaskSnapshot) taskSnapshot}));
+//                        } else if (LawnchairQuickstepCompat.ATLEAST_R) {
+//                            ActivityManagerCompatVR compat = (ActivityManagerCompatVR) LawnchairQuickstepCompat.getActivityManagerCompat();
+//                            ActivityManagerCompatVR.ThumbnailData data = compat.convertTaskSnapshotToThumbnailData(taskSnapshot);
+//                            HashMap<Integer, ThumbnailData> thumbnailDatas = new HashMap<>();
+//                            if (data != null) {
+//                                thumbnailDatas.put(0, new ThumbnailData());
+//                            }
+//                            animationHandler.onAnimationCanceled(thumbnailDatas);
+//                        } else {
+//                            animationHandler.onAnimationCanceled(new HashMap<>());
+//                        }
+//                    }
+//
+//                    /**
+//                     * compat for android 12/11
+//                     */
+//                    public void onTaskAppeared(RemoteAnimationTarget app) {
+//                        animationHandler.onTasksAppeared(new RemoteAnimationTarget[]{app});
+//                    }
+//
+//                    @Override
+//                    public void onTasksAppeared(RemoteAnimationTarget[] apps) {
+//                        animationHandler.onTasksAppeared(apps);
+//                    }
+//                };
+//            }
+//            LawnchairQuickstepCompat.getActivityManagerCompat().startRecentsActivity(intent, eventTime, runner);
+//            return true;
+//        } catch (Exception e) {
+//            return false;
+//        }
+//    }
 
     /**
      * Cancels the remote recents animation started from {@link #startRecentsActivity}.

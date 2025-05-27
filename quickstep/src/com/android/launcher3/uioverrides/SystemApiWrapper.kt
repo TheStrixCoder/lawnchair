@@ -29,6 +29,7 @@ import android.content.pm.LauncherApps
 import android.content.pm.ShortcutInfo
 import android.os.Build
 import android.os.Bundle
+import android.os.Flags.allowPrivateProfile
 import android.os.IBinder
 import android.os.UserHandle
 import android.os.UserManager

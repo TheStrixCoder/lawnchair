@@ -21,7 +21,7 @@ import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
 
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.model.data.AppInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Handles changes due to a sessions updates for a currently installing app.
  */
-public class PackageInstallStateChangedTask implements ModelUpdateTask {
+public class PackageInstallStateChangedTask implements LauncherModel.ModelUpdateTask {
 
     @NonNull
     private final PackageInstallInfo mInstallInfo;

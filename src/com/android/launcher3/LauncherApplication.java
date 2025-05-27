@@ -17,6 +17,7 @@ package com.android.launcher3;
 
 import android.app.Application;
 
+//import com.android.launcher3.dagger.DaggerLauncherAppComponent;
 import com.android.launcher3.dagger.DaggerLauncherAppComponent;
 import com.android.launcher3.dagger.LauncherAppComponent;
 import com.android.launcher3.dagger.LauncherBaseAppComponent;

@@ -16,7 +16,6 @@
 package com.android.launcher3.model;
 
 import static com.android.launcher3.LauncherSettings.Favorites.addTableToDb;
-import static com.android.launcher3.Utilities.SHOULD_SHOW_FIRST_PAGE_WIDGET;
 import static com.android.launcher3.provider.LauncherDbUtils.dropTable;
 
 import android.content.ContentValues;
@@ -44,7 +43,6 @@ import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.logging.FileLog;
 import com.android.launcher3.pm.UserCache;
 import com.android.launcher3.provider.LauncherDbUtils;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
 import com.android.launcher3.util.IntArray;
 import com.android.launcher3.util.IntSet;
 import com.android.launcher3.util.NoLocaleSQLiteHelper;
@@ -171,7 +169,7 @@ public class DatabaseHelper extends NoLocaleSQLiteHelper implements
             case 12:
                 // No-op
             case 13: {
-                try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+                try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
                     // Insert new column for holding widget provider name
                     db.execSQL("ALTER TABLE favorites ADD COLUMN appWidgetProvider TEXT;");
                     t.commit();
@@ -306,7 +304,7 @@ public class DatabaseHelper extends NoLocaleSQLiteHelper implements
      * Clears all the data for a fresh start.
      */
     public void createEmptyDB(SQLiteDatabase db) {
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             dropTable(db, Favorites.TABLE_NAME);
             dropTable(db, "workspaceScreens");
             onCreate(db);
@@ -371,14 +369,14 @@ public class DatabaseHelper extends NoLocaleSQLiteHelper implements
      */
     @Thunk
     void convertShortcutsToLauncherActivities(SQLiteDatabase db) {
-        try (SQLiteTransaction t = new SQLiteTransaction(db);
-                // Only consider the primary user as other users can't have a shortcut.
-                Cursor c = db.query(Favorites.TABLE_NAME,
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db);
+             // Only consider the primary user as other users can't have a shortcut.
+             Cursor c = db.query(Favorites.TABLE_NAME,
                         new String[] { Favorites._ID, Favorites.INTENT },
                         "itemType=" + Favorites.ITEM_TYPE_SHORTCUT
                                 + " AND profileId=" + getDefaultUserSerial(),
                         null, null, null, null);
-                SQLiteStatement updateStmt = db.compileStatement("UPDATE favorites SET itemType="
+             SQLiteStatement updateStmt = db.compileStatement("UPDATE favorites SET itemType="
                         + Favorites.ITEM_TYPE_APPLICATION + " WHERE _id=?")) {
             final int idIndex = c.getColumnIndexOrThrow(Favorites._ID);
             final int intentIndex = c.getColumnIndexOrThrow(Favorites.INTENT);
@@ -409,7 +407,7 @@ public class DatabaseHelper extends NoLocaleSQLiteHelper implements
 
     @Thunk
     boolean updateFolderItemsRank(SQLiteDatabase db, boolean addRankColumn) {
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             if (addRankColumn) {
                 // Insert new column for holding rank
                 db.execSQL("ALTER TABLE favorites ADD COLUMN rank INTEGER NOT NULL DEFAULT 0;");
@@ -438,7 +436,7 @@ public class DatabaseHelper extends NoLocaleSQLiteHelper implements
     }
 
     private boolean addIntegerColumn(SQLiteDatabase db, String columnName, long defaultValue) {
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             db.execSQL("ALTER TABLE favorites ADD COLUMN "
                     + columnName + " INTEGER NOT NULL DEFAULT " + defaultValue + ";");
             t.commit();

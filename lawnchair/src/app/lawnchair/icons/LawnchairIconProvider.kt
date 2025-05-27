@@ -1,6 +1,7 @@
 package app.lawnchair.icons
 
 import android.annotation.SuppressLint
+import android.app.blob.XmlTags.ATTR_PACKAGE
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -35,7 +36,7 @@ import com.android.launcher3.BuildConfig
 import com.android.launcher3.R
 import com.android.launcher3.Utilities
 import com.android.launcher3.icons.IconProvider
-import com.android.launcher3.icons.ThemedIconDrawable
+import com.android.launcher3.icons.mono.ThemedIconDrawable
 import com.android.launcher3.util.ComponentKey
 import com.android.launcher3.util.SafeCloseable
 import java.util.function.Supplier
@@ -44,7 +45,7 @@ import org.xmlpull.v1.XmlPullParser
 class LawnchairIconProvider @JvmOverloads constructor(
     private val context: Context,
     supportsIconTheme: Boolean = false,
-) : IconProvider(context, supportsIconTheme) {
+) : IconProvider(context) {
 
     private val prefs = PreferenceManager.getInstance(context)
     private val iconPackPref = prefs.iconPackPackage
@@ -89,7 +90,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
         setIconThemeSupported(supportsIconTheme)
     }
 
-    override fun setIconThemeSupported(isSupported: Boolean) {
+     override fun setIconThemeSupported(isSupported: Boolean) {
         _themeMap = if (isSupported && isOlderLawniconsInstalled) null else DISABLED_MAP
     }
 
@@ -111,7 +112,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
         return iconPack.getIcon(componentName)
     }
 
-    override fun getIconWithOverrides(
+     override fun getIconWithOverrides(
         packageName: String,
         component: String,
         user: UserHandle,
@@ -128,7 +129,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
             when {
                 iconEntry.type == IconType.Calendar -> {
                     resolvedEntry = iconEntry.resolveDynamicCalendar(getDay())
-                    themeData = getThemeData(mCalendar.packageName, "")
+                    themeData = getThemeData(mCalendar)
                     iconType = ICON_TYPE_CALENDAR
                 }
                 !supportsIconTheme -> {
@@ -136,7 +137,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
                 }
                 clock != null -> {
                     // the icon supports dynamic clock, use dynamic themed clock
-                    themeData = getThemeData(mClock.packageName, "")
+                    themeData = getThemeData(mClock)
                     iconType = ICON_TYPE_CLOCK
                 }
                 packageName == mClock.packageName -> {
@@ -145,7 +146,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
                 }
                 packageName == mCalendar.packageName -> {
                     // calendar app, apply the dynamic calendar icon
-                    themeData = getThemeData(mCalendar.packageName, "")
+                    themeData = getThemeData(mCalendar)
                     iconType = ICON_TYPE_CALENDAR
                 }
                 else -> {
@@ -168,7 +169,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
                 return if (td != null) {
                     td.wrapDrawable(defaultIcon, iconType)
                 } else {
-                    val themedColors = ThemedIconDrawable.getThemedColors(context)
+                    val themedColors = ThemedIconDrawable.getColors(context)
                     if (context.shouldTransparentBGIcons()) {
                         return defaultIcon.apply { setTint(themedColors[1]) }
                     }
@@ -183,7 +184,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
                 return if (td != null) {
                     td.wrapDrawable(iconCompat, iconType)
                 } else {
-                    val themedColors = ThemedIconDrawable.getThemedColors(context)
+                    val themedColors: IntArray = ThemedIconDrawable.getColors(context)
                     if (context.shouldTransparentBGIcons()) {
                         return iconCompat.apply { setTint(themedColors[1]) }
                     }
@@ -197,7 +198,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
         return defaultIcon
     }
 
-    override fun isThemeEnabled(): Boolean {
+     fun isThemeEnabled(): Boolean {
         return _themeMap != DISABLED_MAP
     }
 
@@ -209,20 +210,16 @@ class LawnchairIconProvider @JvmOverloads constructor(
         return themeMap[componentName] ?: themeMap[ComponentName(componentName.packageName, "")]
     }
 
-    override fun getIcon(info: ActivityInfo?): Drawable {
+    fun getIcon(info: ActivityInfo?): Drawable {
         return CustomAdaptiveIconDrawable.wrapNonNull(super.getIcon(info))
     }
 
-    override fun getIcon(info: ActivityInfo?, iconDpi: Int): Drawable {
+     fun getIcon(info: ActivityInfo?, iconDpi: Int): Drawable {
         return CustomAdaptiveIconDrawable.wrapNonNull(super.getIcon(info, iconDpi))
     }
 
-    override fun getIcon(info: LauncherActivityInfo?, iconDpi: Int): Drawable {
-        return CustomAdaptiveIconDrawable.wrapNonNull(super.getIcon(info, iconDpi))
-    }
-
-    override fun getSystemStateForPackage(systemState: String, packageName: String): String {
-        return super.getSystemStateForPackage(systemState, packageName) + ",$isThemeEnabled"
+     override fun getSystemStateForPackage(systemState: String, packageName: String): String {
+        return super.getSystemStateForPackage(systemState, packageName) + ",${isThemeEnabled()}"
     }
 
     override fun getSystemIconState(): String {
@@ -352,7 +349,7 @@ class LawnchairIconProvider @JvmOverloads constructor(
         }
 
         override fun onReceive(context: Context, intent: Intent) {
-            if (isThemeEnabled) {
+            if (isThemeEnabled()) {
                 setIconThemeSupported(true)
             }
             callback.onSystemIconStateChanged(systemIconState)

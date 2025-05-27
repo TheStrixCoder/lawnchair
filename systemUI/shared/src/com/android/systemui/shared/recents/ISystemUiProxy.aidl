@@ -21,6 +21,7 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import com.android.internal.util.ScreenshotRequest;
 
@@ -102,12 +103,18 @@ interface ISystemUiProxy {
     oneway void expandNotificationPanel() = 29;
 
     /**
-     * Notifies SystemUI to invoke Back.
+     * Notifies SystemUI of a back KeyEvent.
      */
-    oneway void onBackPressed() = 44;
+    oneway void onBackEvent(in KeyEvent keyEvent) = 44;
 
     /** Sets home rotation enabled. */
     oneway void setHomeRotationEnabled(boolean enabled) = 45;
+
+    /** Injects button long press. */
+    oneway void injectLongPress(int keyCode) = 46;
+
+    /** Injects button press. */
+    oneway void injectPress(int keyCode) = 43;
 
     /** Notifies when taskbar status updated */
     oneway void notifyTaskbarStatus(boolean visible, boolean stashed) = 47;
@@ -120,7 +127,7 @@ interface ISystemUiProxy {
     oneway void notifyTaskbarAutohideSuspend(boolean suspend) = 48;
 
     /**
-     * Notifies SystemUI to invoke IME Switcher.
+     * Notifies that the IME switcher button has been pressed.
      */
     oneway void onImeSwitcherPressed() = 49;
 
@@ -167,5 +174,15 @@ interface ISystemUiProxy {
      */
     oneway void toggleQuickSettingsPanel() = 56;
 
-    // Next id = 57
+    /**
+     * Notifies that the IME Switcher button has been long pressed.
+     */
+    oneway void onImeSwitcherLongPress() = 57;
+
+    /**
+     * Updates contextual education stats when target gesture type is triggered.
+     */
+    oneway void updateContextualEduStats(boolean isTrackpadGesture, String gestureType) = 58;
+
+    // Next id = 59
 }

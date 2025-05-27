@@ -40,4 +40,5 @@ public final class BuildConfigs {
     public static final boolean WIDGETS_ENABLED = true;
     // Flag to control notification dots support in Launcher
     public static final boolean NOTIFICATION_DOTS_ENABLED = true;
-}
+    
+ }

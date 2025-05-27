@@ -100,4 +100,8 @@ public interface FeatureFlags {
     boolean privateSpaceSysAppsSeparation();
 
     boolean useActivityOverlay();
+    
+    boolean showTaskbarPinningPopupFromAnywhere();
+
+    boolean enableRecentsWindowProtoLog();
 }

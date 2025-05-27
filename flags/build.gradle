@@ -14,3 +14,7 @@ android {
 
 addFrameworkJar('framework-15-qpr2.jar')
 compileOnlyCommonJars()
+dependencies {
+    implementation 'androidx.dynamicanimation:dynamicanimation-ktx:1.1.0'
+    implementation projects.wmshell
+}

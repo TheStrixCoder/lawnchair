@@ -238,6 +238,12 @@ public class Task {
     @ViewDebug.ExportedProperty(category="recents")
     public boolean isLocked;
 
+    @ViewDebug.ExportedProperty(category="recents")
+    public boolean isVisible;
+
+    @ViewDebug.ExportedProperty(category="recents")
+    public boolean isMinimised;
+
     public Point positionInParent;
 
     public Rect appBounds;
@@ -279,6 +285,8 @@ public class Task {
         lastSnapshotData.set(other.lastSnapshotData);
         positionInParent = other.positionInParent;
         appBounds = other.appBounds;
+        isVisible = other.isVisible;
+        isMinimised = other.isMinimised;
     }
 
     /**

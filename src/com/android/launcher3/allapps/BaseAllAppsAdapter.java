@@ -73,6 +73,8 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
     // A divider that separates the apps list and the search market button
     public static final int VIEW_TYPE_ALL_APPS_DIVIDER = 1 << 4;
 
+    public static final int VIEW_TYPE_WORK_EDU_CARD = 1 << 4;
+
     public static final int VIEW_TYPE_WORK_DISABLED_CARD = 1 << 5;
     public static final int VIEW_TYPE_PRIVATE_SPACE_HEADER = 1 << 6;
     public static final int VIEW_TYPE_PRIVATE_SPACE_SYS_APPS_DIVIDER = 1 << 7;
@@ -80,8 +82,6 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
     public static final int NEXT_ID = 9;
 
     public static final int VIEW_TYPE_FOLDER = 1 << 9;
-
-    public static final int NEXT_ID = 10;
 
     // Common view type masks
     public static final int VIEW_TYPE_MASK_DIVIDER = VIEW_TYPE_ALL_APPS_DIVIDER;
@@ -260,7 +260,7 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
             case VIEW_TYPE_EMPTY_SEARCH:
                 return new ViewHolder(mLayoutInflater.inflate(R.layout.all_apps_empty_search,
                         parent, false));
-            case VIEW_TYPE_ALL_APPS_DIVIDER, VIEW_TYPE_PRIVATE_SPACE_SYS_APPS_DIVIDER:
+            case VIEW_TYPE_PRIVATE_SPACE_SYS_APPS_DIVIDER:
                 return new ViewHolder(mLayoutInflater.inflate(
                         R.layout.private_space_divider, parent, false));
             case VIEW_TYPE_WORK_EDU_CARD:
@@ -350,7 +350,6 @@ public abstract class BaseAllAppsAdapter<T extends Context & ActivityContext> ex
                                 ROUND_NOTHING, true /* decorateTogether */);
                 break;
             case VIEW_TYPE_BOTTOM_VIEW_TO_SCROLL_TO:
-            case VIEW_TYPE_ALL_APPS_DIVIDER:
             case VIEW_TYPE_WORK_DISABLED_CARD:
                 // nothing to do
                 break;

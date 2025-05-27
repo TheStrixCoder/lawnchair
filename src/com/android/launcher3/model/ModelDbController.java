@@ -77,7 +77,6 @@ import com.android.launcher3.backuprestore.LauncherRestoreEventLogger.RestoreErr
 import com.android.launcher3.logging.FileLog;
 import com.android.launcher3.pm.UserCache;
 import com.android.launcher3.provider.LauncherDbUtils;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
 import com.android.launcher3.provider.RestoreDbTask;
 import com.android.launcher3.util.IOUtils;
 import com.android.launcher3.util.IntArray;
@@ -297,9 +296,9 @@ public class ModelDbController {
      * Returns a new {@link SQLiteTransaction}
      */
     @WorkerThread
-    public SQLiteTransaction newTransaction() {
+    public LauncherDbUtils.SQLiteTransaction newTransaction() {
         createDbIfNotExists();
-        return new SQLiteTransaction(mOpenHelper.getWritableDatabase());
+        return new LauncherDbUtils.SQLiteTransaction(mOpenHelper.getWritableDatabase());
     }
 
     /**
@@ -543,7 +542,7 @@ public class ModelDbController {
         createDbIfNotExists();
 
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             // Select folders whose id do not match any container value.
             String selection = LauncherSettings.Favorites.ITEM_TYPE + " = "
                     + LauncherSettings.Favorites.ITEM_TYPE_FOLDER + " AND "
@@ -575,7 +574,7 @@ public class ModelDbController {
         createDbIfNotExists();
 
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             // Select all entries with ITEM_TYPE = ITEM_TYPE_APP_PAIR whose id does not
             // appear
             // exactly twice in the CONTAINER column.
@@ -608,7 +607,7 @@ public class ModelDbController {
         createDbIfNotExists();
 
         SQLiteDatabase db = mOpenHelper.getWritableDatabase();
-        try (SQLiteTransaction t = new SQLiteTransaction(db)) {
+        try (LauncherDbUtils.SQLiteTransaction t = new LauncherDbUtils.SQLiteTransaction(db)) {
             // Select all entries whose container id does not appear in the database.
             String selection = CONTAINER + " >= 0"
                     + " AND " + CONTAINER + " NOT IN"

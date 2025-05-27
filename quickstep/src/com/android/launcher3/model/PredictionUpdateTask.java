@@ -32,7 +32,7 @@ import androidx.annotation.NonNull;
 
 import com.android.launcher3.ConstantItem;
 import com.android.launcher3.LauncherAppState;
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherPrefs;
 import com.android.launcher3.model.BgDataModel.FixedContainerItems;
 import com.android.launcher3.model.QuickstepModelDelegate.PredictorState;
@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 /**
  * Task to update model as a result of predicted apps update
  */
-public class PredictionUpdateTask implements ModelUpdateTask {
+public class PredictionUpdateTask implements LauncherModel.ModelUpdateTask {
 
     public static final ConstantItem<Boolean> LAST_PREDICTION_ENABLED =
             nonRestorableItem("last_prediction_enabled_state", true, ENCRYPTED);

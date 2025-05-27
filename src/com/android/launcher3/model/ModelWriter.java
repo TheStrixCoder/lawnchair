@@ -29,7 +29,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.android.launcher3.LauncherModel;
-import com.android.launcher3.LauncherModel.CallbackTask;
 import com.android.launcher3.LauncherSettings.Favorites;
 import com.android.launcher3.Utilities;
 import com.android.launcher3.celllayout.CellPosMapper;
@@ -41,7 +40,7 @@ import com.android.launcher3.model.data.CollectionInfo;
 import com.android.launcher3.model.data.ItemInfo;
 import com.android.launcher3.model.data.LauncherAppWidgetInfo;
 import com.android.launcher3.model.data.WorkspaceItemInfo;
-import com.android.launcher3.provider.LauncherDbUtils.SQLiteTransaction;
+import com.android.launcher3.provider.LauncherDbUtils;
 import com.android.launcher3.util.ContentWriter;
 import com.android.launcher3.util.Executors;
 import com.android.launcher3.util.ItemInfoMatcher;
@@ -393,7 +392,7 @@ public class ModelWriter {
         mModel.forceReload();
     }
 
-    private void notifyOtherCallbacks(CallbackTask task) {
+    private void notifyOtherCallbacks(LauncherModel.CallbackTask task) {
         if (mOwner == null) {
             // If the call is happening from a model, it will take care of updating the
             // callbacks
@@ -438,7 +437,7 @@ public class ModelWriter {
 
         @Override
         public void runImpl() {
-            try (SQLiteTransaction t = mModel.getModelDbController().newTransaction()) {
+            try (LauncherDbUtils.SQLiteTransaction t = mModel.getModelDbController().newTransaction()) {
                 int count = mItems.size();
                 for (int i = 0; i < count; i++) {
                     ItemInfo item = mItems.get(i);

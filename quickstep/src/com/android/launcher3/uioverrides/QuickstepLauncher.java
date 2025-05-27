@@ -18,6 +18,7 @@ package com.android.launcher3.uioverrides;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.view.accessibility.AccessibilityEvent.TYPE_VIEW_FOCUSED;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_WALLPAPER_ACTIVITY;
+import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPTIMIZE_MEASURE;
 
 import static com.android.app.animation.Interpolators.EMPHASIZED;
 import static com.android.internal.jank.Cuj.CUJ_LAUNCHER_LAUNCH_APP_PAIR_FROM_WORKSPACE;
@@ -69,6 +70,7 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_5
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.annotation.RequiresApi;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
@@ -968,8 +970,8 @@ public class QuickstepLauncher extends Launcher implements RecentsViewContainer,
                                 && mActiveOnBackAnimationCallback == null) {
                             return;
                         }
-                    });
-        }
+                    }
+                });
     }
 
     private void onTaskbarInAppDisplayProgressUpdate(float progress, int flag) {

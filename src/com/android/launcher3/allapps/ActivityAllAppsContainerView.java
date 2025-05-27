@@ -124,14 +124,6 @@ public class ActivityAllAppsContainerView<T extends Context & ActivityContext>
         OnDeviceProfileChangeListener, PersonalWorkSlidingTabStrip.OnActivePageChangedListener,
         ScrimView.ScrimDrawingController {
 
-    public static final FloatProperty<ActivityAllAppsContainerView<?>> BOTTOM_SHEET_ALPHA = new FloatProperty<>(
-            "bottomSheetAlpha") {
-        @Override
-        public Float get(ActivityAllAppsContainerView<?> containerView) {
-            return containerView.mBottomSheetAlpha;
-        }
-    };
-
     public static final float PULL_MULTIPLIER = .02f;
     public static final float FLING_VELOCITY_MULTIPLIER = 1200f;
     protected static final String BUNDLE_KEY_CURRENT_PAGE = "launcher.allapps.current_page";

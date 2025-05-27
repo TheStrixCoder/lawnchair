@@ -569,7 +569,6 @@ public abstract class BaseDragLayer<T extends Context & ActivityContext>
                 Math.max(gestureInsets.right, imeInset.right),
                 Math.max(gestureInsetBottom, imeInset.bottom)
             );
-        }
         return super.dispatchApplyWindowInsets(insets);
     }
 }

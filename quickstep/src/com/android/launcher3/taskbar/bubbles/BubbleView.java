@@ -196,58 +196,9 @@ public class BubbleView extends ConstraintLayout {
         mDrawParams.leftAlign = mOnLeft;
         mDrawParams.scale = mDotScale;
 
-        mDotRenderer.draw(canvas, mDrawParams, -1);
+        mDotRenderer.draw(canvas, mDrawParams);
     }
-
-    @Override
-    public void onInitializeAccessibilityNodeInfoInternal(AccessibilityNodeInfo info) {
-        super.onInitializeAccessibilityNodeInfoInternal(info);
-        info.addAction(AccessibilityNodeInfo.ACTION_COLLAPSE);
-        if (mBubble instanceof BubbleBarBubble) {
-            info.addAction(AccessibilityNodeInfo.ACTION_DISMISS);
-        }
-        if (mController != null) {
-            if (mController.getBubbleBarLocation().isOnLeft(isLayoutRtl())) {
-                info.addAction(new AccessibilityNodeInfo.AccessibilityAction(R.id.action_move_right,
-                        getResources().getString(R.string.bubble_bar_action_move_right)));
-            } else {
-                info.addAction(new AccessibilityNodeInfo.AccessibilityAction(R.id.action_move_left,
-                        getResources().getString(R.string.bubble_bar_action_move_left)));
-            }
-        }
-    }
-
-    @Override
-    public boolean performAccessibilityActionInternal(int action, Bundle arguments) {
-        if (super.performAccessibilityActionInternal(action, arguments)) {
-            return true;
-        }
-        if (action == AccessibilityNodeInfo.ACTION_COLLAPSE) {
-            if (mController != null) {
-                mController.collapse();
-            }
-            return true;
-        }
-        if (action == AccessibilityNodeInfo.ACTION_DISMISS) {
-            if (mController != null) {
-                mController.dismiss(this);
-            }
-            return true;
-        }
-        if (action == R.id.action_move_left) {
-            if (mController != null) {
-                mController.updateBubbleBarLocation(BubbleBarLocation.LEFT,
-                        BubbleBarLocation.UpdateSource.A11Y_ACTION_BUBBLE);
-            }
-        }
-        if (action == R.id.action_move_right) {
-            if (mController != null) {
-                mController.updateBubbleBarLocation(BubbleBarLocation.RIGHT,
-                        BubbleBarLocation.UpdateSource.A11Y_ACTION_BUBBLE);
-            }
-        }
-        return false;
-    }
+    
 
     void setController(@Nullable Controller controller) {
         mController = controller;
@@ -269,8 +220,7 @@ public class BubbleView extends ConstraintLayout {
         ColorOption counterColorOption = PreferenceExtensionsKt
                 .firstBlocking(preferenceManager2.getNotificationDotTextColor());
         int countColor = counterColorOption.getColorPreferenceEntry().getLightColor().invoke(getContext());
-        mDotRenderer = new DotRenderer(mBubbleSize, bubble.getDotPath(), DEFAULT_PATH_SIZE, false, null, dotColor,
-                countColor);
+        mDotRenderer = new DotRenderer(mBubbleSize, bubble.getDotPath(), DEFAULT_PATH_SIZE);
         String contentDesc = bubble.getInfo().getTitle();
         if (TextUtils.isEmpty(contentDesc)) {
             contentDesc = getResources().getString(R.string.bubble_bar_bubble_fallback_description);

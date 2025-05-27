@@ -92,13 +92,6 @@ public class StatusBarTouchController implements TouchController {
         if (mSystemUiProxy.isActive()) {
             mLastAction = ev.getActionMasked();
             mSystemUiProxy.onStatusBarTouchEvent(ev);
-        } else if (!mExpanded) {
-            mExpanded = true;
-            expand();
-        }
-        if (!mVibrated) {
-            mVibrated = true;
-            vibrate();
         }
     }
 
@@ -130,8 +123,6 @@ public class StatusBarTouchController implements TouchController {
                 return false;
             }
             mDownEvents.clear();
-            mExpanded = false;
-            mVibrated = false;
             mDownEvents.put(pid, new PointF(ev.getX(), ev.getY()));
         } else if (ev.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
             // Check!! should only set it only when threshold is not entered.

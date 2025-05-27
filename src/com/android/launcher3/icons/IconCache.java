@@ -54,6 +54,7 @@ import com.android.launcher3.Utilities;
 import com.android.launcher3.icons.cache.BaseIconCache;
 import com.android.launcher3.icons.cache.CachedObject;
 import com.android.launcher3.icons.cache.CachedObjectCachingLogic;
+import com.android.launcher3.icons.cache.CachingLogic;
 import com.android.launcher3.icons.cache.LauncherActivityCachingLogic;
 import com.android.launcher3.logging.FileLog;
 import com.android.launcher3.model.data.AppInfo;
@@ -218,20 +219,23 @@ public class IconCache extends BaseIconCache {
      */
     public synchronized void updateTitleAndIcon(AppInfo application) {
         CacheEntry entry = cacheLocked(application.componentName,
-                application.user, () -> null, mLauncherActivityInfoCachingLogic,
-                false, application.usingLowResIcon());
-        if (entry.bitmap == null || isDefaultIcon(entry.bitmap, application.user)) {
-            return;
-        }
-
-        if (preferPackageIcon) {
-            String packageName = application.getTargetPackage();
-            CacheEntry packageEntry = cacheLocked(new ComponentName(packageName, packageName + EMPTY_CLASS_NAME),
-                    application.user, () -> null, mLauncherActivityInfoCachingLogic,
-                    true, application.usingLowResIcon());
-            applyPackageEntry(packageEntry, application, entry);
-        } else {
+            application.user, () -> null, LauncherActivityCachingLogic.INSTANCE,
+            application.usingLowResIcon() ? LookupFlag.USE_LOW_RES : LookupFlag.DEFAULT);
+        if (entry.bitmap != null || !isDefaultIcon(entry.bitmap, application.user)) {
             applyCacheEntry(entry, application);
+        }
+    }
+
+    protected void applyPackageEntry(@NonNull final CacheEntry packageEntry,
+                                     @NonNull final ItemInfoWithIcon info, @NonNull final CacheEntry fallbackEntry) {
+        info.title = Utilities.trim(packageEntry.title);
+        info.appTitle = Utilities.trim(fallbackEntry.title);
+        info.contentDescription = packageEntry.contentDescription;
+        info.bitmap = packageEntry.bitmap;
+        if (packageEntry.bitmap == null) {
+            // TODO: entry.bitmap can never be null, so this should not happen at all.
+            Log.wtf(TAG, "Cannot find bitmap from the cache, default icon was loaded.");
+            info.bitmap = getDefaultIcon(info.user);
         }
     }
 
@@ -378,24 +382,12 @@ public class IconCache extends BaseIconCache {
             @NonNull ItemInfoWithIcon infoInOut,
             @NonNull Supplier<LauncherActivityInfo> activityInfoProvider,
             boolean usePkgIcon, boolean useLowResIcon, boolean preferPackageEntry) {
+        int lookupFlags = LookupFlag.DEFAULT;
+        if (usePkgIcon) lookupFlags |= LookupFlag.USE_PACKAGE_ICON;
+        if (useLowResIcon) lookupFlags |= LookupFlag.USE_LOW_RES;
         CacheEntry entry = cacheLocked(infoInOut.getTargetComponent(), infoInOut.user,
-                activityInfoProvider, mLauncherActivityInfoCachingLogic, usePkgIcon,
-                useLowResIcon);
-        if (preferPackageEntry) {
-            String packageName = infoInOut.getTargetPackage();
-            CacheEntry packageEntry = cacheLocked(
-                    new ComponentName(packageName, packageName + EMPTY_CLASS_NAME),
-                    infoInOut.user, activityInfoProvider, mLauncherActivityInfoCachingLogic,
-                    usePkgIcon, useLowResIcon);
-            applyPackageEntry(packageEntry, infoInOut, entry);
-        } else if (useLowResIcon || !entry.bitmap.isNullOrLowRes()
-                || infoInOut.bitmap.isNullOrLowRes()) {
-            // Only use cache entry if it will not downgrade the current bitmap in infoInOut
-            applyCacheEntry(entry, infoInOut);
-        } else {
-            Log.d(TAG, "getTitleAndIcon: Cache entry bitmap was a downgrade of existing bitmap"
-                    + " in ItemInfo. Skipping.");
-        }
+            activityInfoProvider, LauncherActivityCachingLogic.INSTANCE, lookupFlags);
+        applyCacheEntry(entry, infoInOut);
     }
 
     /**

@@ -25,7 +25,6 @@ import static com.android.launcher3.LauncherPrefs.IS_FIRST_LOAD_AFTER_RESTORE;
 import static com.android.launcher3.LauncherPrefs.SHOULD_SHOW_SMARTSPACE;
 import static com.android.launcher3.LauncherSettings.Favorites.TABLE_NAME;
 import static com.android.launcher3.icons.CacheableShortcutInfo.convertShortcutsToCacheableShortcuts;
-import static com.android.launcher3.folder.FolderGridOrganizer.createFolderGridOrganizer;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_HAS_SHORTCUT_PERMISSION;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_PRIVATE_PROFILE_QUIET_MODE_ENABLED;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_QUIET_MODE_CHANGE_PERMISSION;
@@ -113,7 +112,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
-import java.util.stream.Collectors;
 
 import app.lawnchair.preferences.PreferenceManager;
 
@@ -459,15 +457,15 @@ public class LoaderTask implements Runnable {
             }
             installingPkgs.forEach(mApp.getIconCache()::updateSessionCache);
             FileLog.d(TAG, "loadWorkspace: Packages with active install/update sessions: "
-                    + installingPkgs.keySet().stream().map(info -> info.mPackageName).toList());
-            }
+                + installingPkgs.keySet().stream().map(info -> info.mPackageName).toList());
+
             mFirstScreenBroadcast = new FirstScreenBroadcast(installingPkgs);
 
             mShortcutKeyToPinnedShortcuts = new HashMap<>();
             final LoaderCursor c = new LoaderCursor(
-                    dbController.query(TABLE_NAME, null, selection, null, null),
-                    mApp, mUserManagerState, mPmHelper,
-                    mIsRestoreFromBackup ? restoreEventLogger : null);
+                dbController.query(TABLE_NAME, null, selection, null, null),
+                mApp, mUserManagerState, mPmHelper,
+                mIsRestoreFromBackup ? restoreEventLogger : null);
             final Bundle extras = c.getExtras();
             mDbName = extras == null ? null : extras.getString(ModelDbController.EXTRA_DB_NAME);
             try {
@@ -477,11 +475,11 @@ public class LoaderTask implements Runnable {
                 List<IconRequestInfo<WorkspaceItemInfo>> iconRequestInfos = new ArrayList<>();
 
                 WorkspaceItemProcessor itemProcessor = new WorkspaceItemProcessor(c, memoryLogger,
-                        mUserCache, mUserManagerState, mLauncherApps, mPendingPackages,
-                        mShortcutKeyToPinnedShortcuts, mApp, mBgDataModel,
-                        mWidgetProvidersMap, installingPkgs, isSdCardReady,
-                        widgetInflater, mPmHelper, iconRequestInfos, unlockedUsers,
-                        allDeepShortcuts);
+                    mUserCache, mUserManagerState, mLauncherApps, mPendingPackages,
+                    mShortcutKeyToPinnedShortcuts, mApp, mBgDataModel,
+                    mWidgetProvidersMap, installingPkgs, isSdCardReady,
+                    widgetInflater, mPmHelper, iconRequestInfos, unlockedUsers,
+                    allDeepShortcuts);
 
                 if (mStopped) {
                     Log.w(TAG, "loadWorkspaceImpl: Loader stopped, skipping item processing");
@@ -496,9 +494,9 @@ public class LoaderTask implements Runnable {
             }
 
             mModelDelegate.loadAndBindWorkspaceItems(mUserManagerState,
-                    mLauncherBinder.mCallbacksList, mShortcutKeyToPinnedShortcuts);
+                mLauncherBinder.mCallbacksList, mShortcutKeyToPinnedShortcuts);
             mModelDelegate.loadAndBindAllAppsItems(mUserManagerState,
-                    mLauncherBinder.mCallbacksList, mShortcutKeyToPinnedShortcuts);
+                mLauncherBinder.mCallbacksList, mShortcutKeyToPinnedShortcuts);
             mModelDelegate.loadAndBindOtherItems(mLauncherBinder.mCallbacksList);
             mModelDelegate.markActive();
 
@@ -515,8 +513,10 @@ public class LoaderTask implements Runnable {
             processAppPairItems();
 
             c.commitRestoredItems();
+
         }
     }
+    
 
     /**
      * After all items have been processed and added to the BgDataModel, this method

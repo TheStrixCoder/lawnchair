@@ -46,6 +46,8 @@ public class SplitScreenConstants {
      */
     public static final int SPLIT_POSITION_UNDEFINED = -1;
 
+    public static final int SNAP_TO_2_50_50 = 1;
+
     /**
      * Specifies that a split is positioned at the top half of the screen if
      * in portrait mode or at the left half of the screen if in landscape mode.

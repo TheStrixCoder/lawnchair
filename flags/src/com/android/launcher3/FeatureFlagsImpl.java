@@ -876,5 +876,16 @@ public final class FeatureFlagsImpl implements FeatureFlags {
 
     }
 
+    //todo: fix these
+    @Override
+    public boolean showTaskbarPinningPopupFromAnywhere() {
+        return false;
+    }
+
+    @Override
+    public boolean enableRecentsWindowProtoLog() {
+        return false;
+    }
+
 }
 

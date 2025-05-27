@@ -35,6 +35,10 @@ public final class Flags {
         return FEATURE_FLAGS.returnAnimationFrameworkLibrary();
     }
     
+    public static boolean returnAnimationFrameworkLongLived() {
+        return false;
+    }
+    
     
     public static boolean shadeAllowBackGesture() {
         return FEATURE_FLAGS.shadeAllowBackGesture();
@@ -47,4 +51,11 @@ public final class Flags {
 
     private static FeatureFlags FEATURE_FLAGS = new FeatureFlagsImpl();
 
+    public static boolean newCustomizationPickerUi() {
+        return false;
+    }
+
+    public static boolean threeButtonCornerSwipe() {
+        return false;
+    }
 }

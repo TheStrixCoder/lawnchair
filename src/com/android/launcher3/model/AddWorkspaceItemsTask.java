@@ -26,8 +26,7 @@ import android.util.Pair;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.android.launcher3.LauncherModel.CallbackTask;
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.icons.IconCache;
 import com.android.launcher3.logging.FileLog;
@@ -52,7 +51,7 @@ import java.util.Objects;
 /**
  * Task to add auto-created workspace items.
  */
-public class AddWorkspaceItemsTask implements ModelUpdateTask {
+public class AddWorkspaceItemsTask implements LauncherModel.ModelUpdateTask {
 
     private static final String LOG = "AddWorkspaceItemsTask";
 
@@ -212,7 +211,7 @@ public class AddWorkspaceItemsTask implements ModelUpdateTask {
         }
 
         if (!addedItemsFinal.isEmpty()) {
-            taskController.scheduleCallbackTask(new CallbackTask() {
+            taskController.scheduleCallbackTask(new LauncherModel.CallbackTask() {
                 @Override
                 public void execute(@NonNull Callbacks callbacks) {
                     final ArrayList<ItemInfo> addAnimated = new ArrayList<>();

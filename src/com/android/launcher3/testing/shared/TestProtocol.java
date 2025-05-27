@@ -79,6 +79,9 @@ public final class TestProtocol {
     public static final String TEST_INFO_REQUEST_FIELD = "request";
     public static final String TEST_INFO_RESPONSE_FIELD = "response";
 
+    public static final String REQUEST_GET_OVERVIEW_TASK_SIZE = "get-overivew-task-size";
+    public static final String REQUEST_GET_OVERVIEW_GRID_TASK_SIZE = "get-overivew-grid-task-size";
+
     public static final String REQUEST_HOME_TO_OVERVIEW_SWIPE_HEIGHT =
             "home-to-overview-swipe-height";
     public static final String REQUEST_BACKGROUND_TO_OVERVIEW_SWIPE_HEIGHT =

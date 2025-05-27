@@ -44,7 +44,6 @@ import androidx.test.filters.LargeTest;
 
 import com.android.launcher3.Launcher;
 import com.android.launcher3.LauncherAppState;
-import com.android.launcher3.LauncherModel;
 import com.android.launcher3.LauncherSettings;
 import com.android.launcher3.R;
 import com.android.launcher3.celllayout.FavoriteItemsTransaction;

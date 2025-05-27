@@ -54,7 +54,7 @@
                 </FrameLayout>
 
                 <ImageButton
-                    android:id="@+id/widget_picker_widget_options_menu"
+                    android:id="@+id/widget_picker_widget_options_menu_2"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:layout_marginStart="8dp"

@@ -17,13 +17,13 @@ package com.android.launcher3.model;
 
 import androidx.annotation.NonNull;
 
-import com.android.launcher3.LauncherModel.ModelUpdateTask;
+import com.android.launcher3.LauncherModel;
 
 /**
  * Handles updates due to changes in Device Policy Management resources triggered by
  * {@link android.app.admin.DevicePolicyManager#ACTION_DEVICE_POLICY_RESOURCE_UPDATED}.
  */
-public class ReloadStringCacheTask implements ModelUpdateTask {
+public class ReloadStringCacheTask implements LauncherModel.ModelUpdateTask {
 
     @NonNull
     private ModelDelegate mModelDelegate;

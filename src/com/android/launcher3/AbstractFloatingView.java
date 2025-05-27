@@ -34,6 +34,8 @@ import android.view.View;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.Interpolator;
 import android.widget.LinearLayout;
+import android.window.OnBackAnimationCallback;
+
 import androidx.annotation.IntDef;
 
 import com.android.launcher3.anim.PendingAnimation;
@@ -49,37 +51,34 @@ import java.lang.annotation.RetentionPolicy;
  */
 @TargetApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 public abstract class AbstractFloatingView extends LinearLayout implements TouchController,
-        OnBackPressedHandler {
+    OnBackAnimationCallback {
 
     @IntDef(flag = true, value = {
-            TYPE_COMPOSE_VIEW,
-            TYPE_FOLDER,
-            TYPE_ACTION_POPUP,
-            TYPE_WIDGETS_BOTTOM_SHEET,
-            TYPE_WIDGET_RESIZE_FRAME,
-            TYPE_WIDGETS_FULL_SHEET,
-            TYPE_ON_BOARD_POPUP,
-            TYPE_DISCOVERY_BOUNCE,
-            TYPE_SNACKBAR,
-            TYPE_LISTENER,
-            TYPE_ALL_APPS_EDU,
-            TYPE_DRAG_DROP_POPUP,
-            TYPE_TASK_MENU,
-            TYPE_OPTIONS_POPUP,
-            TYPE_ICON_SURFACE,
-            TYPE_OPTIONS_POPUP_DIALOG,
-            TYPE_PIN_WIDGET_FROM_EXTERNAL_POPUP,
-            TYPE_TASKBAR_EDUCATION_DIALOG,
-            TYPE_TASKBAR_ALL_APPS,
-            TYPE_ADD_TO_HOME_CONFIRMATION,
-            TYPE_TASKBAR_OVERLAY_PROXY,
-            TYPE_TASKBAR_PINNING_POPUP,
-            TYPE_PIN_IME_POPUP
+        TYPE_FOLDER,
+        TYPE_ACTION_POPUP,
+        TYPE_WIDGETS_BOTTOM_SHEET,
+        TYPE_WIDGET_RESIZE_FRAME,
+        TYPE_WIDGETS_FULL_SHEET,
+        TYPE_ON_BOARD_POPUP,
+        TYPE_DISCOVERY_BOUNCE,
+        TYPE_SNACKBAR,
+        TYPE_LISTENER,
+        TYPE_ALL_APPS_EDU,
+        TYPE_DRAG_DROP_POPUP,
+        TYPE_TASK_MENU,
+        TYPE_OPTIONS_POPUP,
+        TYPE_ICON_SURFACE,
+        TYPE_OPTIONS_POPUP_DIALOG,
+        TYPE_PIN_WIDGET_FROM_EXTERNAL_POPUP,
+        TYPE_TASKBAR_EDUCATION_DIALOG,
+        TYPE_TASKBAR_ALL_APPS,
+        TYPE_ADD_TO_HOME_CONFIRMATION,
+        TYPE_TASKBAR_OVERLAY_PROXY,
+        TYPE_TASKBAR_PINNING_POPUP,
+        TYPE_PIN_IME_POPUP
     })
     @Retention(RetentionPolicy.SOURCE)
-    public @interface FloatingViewType {
-    }
-
+    public @interface FloatingViewType {}
     public static final int TYPE_FOLDER = 1 << 0;
     public static final int TYPE_ACTION_POPUP = 1 << 1;
     public static final int TYPE_WIDGETS_BOTTOM_SHEET = 1 << 2;
@@ -110,39 +109,38 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     public static final int TYPE_COMPOSE_VIEW = 1 << 23;
 
     public static final int TYPE_ALL = TYPE_FOLDER | TYPE_ACTION_POPUP
-            | TYPE_WIDGETS_BOTTOM_SHEET | TYPE_WIDGET_RESIZE_FRAME | TYPE_WIDGETS_FULL_SHEET
-            | TYPE_ON_BOARD_POPUP | TYPE_DISCOVERY_BOUNCE | TYPE_TASK_MENU
-            | TYPE_OPTIONS_POPUP | TYPE_SNACKBAR | TYPE_LISTENER | TYPE_ALL_APPS_EDU
-            | TYPE_ICON_SURFACE | TYPE_DRAG_DROP_POPUP | TYPE_PIN_WIDGET_FROM_EXTERNAL_POPUP
-            | TYPE_TASKBAR_EDUCATION_DIALOG | TYPE_TASKBAR_ALL_APPS | TYPE_OPTIONS_POPUP_DIALOG
-            | TYPE_ADD_TO_HOME_CONFIRMATION | TYPE_TASKBAR_OVERLAY_PROXY
-            | TYPE_TASKBAR_PINNING_POPUP | TYPE_PIN_IME_POPUP | TYPE_COMPOSE_VIEW;
+        | TYPE_WIDGETS_BOTTOM_SHEET | TYPE_WIDGET_RESIZE_FRAME | TYPE_WIDGETS_FULL_SHEET
+        | TYPE_ON_BOARD_POPUP | TYPE_DISCOVERY_BOUNCE | TYPE_TASK_MENU
+        | TYPE_OPTIONS_POPUP | TYPE_SNACKBAR | TYPE_LISTENER | TYPE_ALL_APPS_EDU
+        | TYPE_ICON_SURFACE | TYPE_DRAG_DROP_POPUP | TYPE_PIN_WIDGET_FROM_EXTERNAL_POPUP
+        | TYPE_TASKBAR_EDUCATION_DIALOG | TYPE_TASKBAR_ALL_APPS | TYPE_OPTIONS_POPUP_DIALOG
+        | TYPE_ADD_TO_HOME_CONFIRMATION | TYPE_TASKBAR_OVERLAY_PROXY
+        | TYPE_TASKBAR_PINNING_POPUP | TYPE_PIN_IME_POPUP;
 
     // Type of popups which should be kept open during launcher rebind
     public static final int TYPE_REBIND_SAFE = TYPE_WIDGETS_FULL_SHEET
-            | TYPE_WIDGETS_BOTTOM_SHEET | TYPE_ON_BOARD_POPUP | TYPE_DISCOVERY_BOUNCE
-            | TYPE_ALL_APPS_EDU | TYPE_ICON_SURFACE | TYPE_TASKBAR_EDUCATION_DIALOG
-            | TYPE_TASKBAR_ALL_APPS | TYPE_OPTIONS_POPUP_DIALOG | TYPE_TASKBAR_OVERLAY_PROXY
-            | TYPE_PIN_IME_POPUP | TYPE_COMPOSE_VIEW;
+        | TYPE_WIDGETS_BOTTOM_SHEET | TYPE_ON_BOARD_POPUP | TYPE_DISCOVERY_BOUNCE
+        | TYPE_ALL_APPS_EDU | TYPE_ICON_SURFACE | TYPE_TASKBAR_EDUCATION_DIALOG
+        | TYPE_TASKBAR_ALL_APPS | TYPE_OPTIONS_POPUP_DIALOG | TYPE_TASKBAR_OVERLAY_PROXY
+        | TYPE_PIN_IME_POPUP;
 
     /** Type of popups that should get exclusive accessibility focus. */
     public static final int TYPE_ACCESSIBLE = TYPE_ALL & ~TYPE_DISCOVERY_BOUNCE & ~TYPE_LISTENER
-            & ~TYPE_ALL_APPS_EDU & ~TYPE_TASKBAR_ALL_APPS & ~TYPE_PIN_IME_POPUP
-            & ~TYPE_WIDGET_RESIZE_FRAME;
+        & ~TYPE_ALL_APPS_EDU & ~TYPE_TASKBAR_ALL_APPS & ~TYPE_PIN_IME_POPUP
+        & ~TYPE_WIDGET_RESIZE_FRAME;
 
-    // These view all have particular operation associated with swipe down
-    // interaction.
+    // These view all have particular operation associated with swipe down interaction.
     public static final int TYPE_STATUS_BAR_SWIPE_DOWN_DISALLOW = TYPE_WIDGETS_BOTTOM_SHEET |
-            TYPE_WIDGETS_FULL_SHEET | TYPE_WIDGET_RESIZE_FRAME | TYPE_ON_BOARD_POPUP |
-            TYPE_DISCOVERY_BOUNCE | TYPE_TASK_MENU | TYPE_DRAG_DROP_POPUP | TYPE_COMPOSE_VIEW;
+        TYPE_WIDGETS_FULL_SHEET | TYPE_WIDGET_RESIZE_FRAME | TYPE_ON_BOARD_POPUP |
+        TYPE_DISCOVERY_BOUNCE | TYPE_TASK_MENU | TYPE_DRAG_DROP_POPUP;
 
     // Floating views that are exclusive to the taskbar overlay window.
-    public static final int TYPE_TASKBAR_OVERLAYS = TYPE_TASKBAR_ALL_APPS | TYPE_TASKBAR_EDUCATION_DIALOG;
+    public static final int TYPE_TASKBAR_OVERLAYS =
+        TYPE_TASKBAR_ALL_APPS | TYPE_TASKBAR_EDUCATION_DIALOG;
 
-    // Floating views that a TouchController should not try to intercept touches
-    // from.
+    // Floating views that a TouchController should not try to intercept touches from.
     public static final int TYPE_TOUCH_CONTROLLER_NO_INTERCEPT = TYPE_ALL & ~TYPE_DISCOVERY_BOUNCE
-            & ~TYPE_LISTENER & ~TYPE_TASKBAR_OVERLAYS;
+        & ~TYPE_LISTENER & ~TYPE_TASKBAR_OVERLAYS;
 
     protected boolean mIsOpen;
 
@@ -155,8 +153,7 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     }
 
     /**
-     * We need to handle touch events to prevent them from falling through to the
-     * workspace below.
+     * We need to handle touch events to prevent them from falling through to the workspace below.
      */
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -176,15 +173,11 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     protected abstract void handleClose(boolean animate);
 
     /**
-     * Creates a user-controlled animation to hint that the view will be closed if
-     * completed.
-     * 
-     * @param distanceToMove The max distance that elements should move from their
-     *                       starting point.
+     * Creates a user-controlled animation to hint that the view will be closed if completed.
+     * @param distanceToMove The max distance that elements should move from their starting point.
      */
     public void addHintCloseAnim(
-            float distanceToMove, Interpolator interpolator, PendingAnimation target) {
-    }
+        float distanceToMove, Interpolator interpolator, PendingAnimation target) { }
 
     public final boolean isOpen() {
         return mIsOpen;
@@ -213,14 +206,14 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
             return;
         }
         sendCustomAccessibilityEvent(
-                targetInfo.first, TYPE_WINDOW_STATE_CHANGED, targetInfo.second);
+            targetInfo.first, TYPE_WINDOW_STATE_CHANGED, targetInfo.second);
 
         if (mIsOpen) {
             getAccessibilityInitialFocusView().performAccessibilityAction(
-                    AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
+                AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS, null);
         }
         ActivityContext.lookupContext(getContext()).getDragLayer()
-                .sendAccessibilityEvent(TYPE_WINDOW_CONTENT_CHANGED);
+            .sendAccessibilityEvent(TYPE_WINDOW_CONTENT_CHANGED);
     }
 
     protected Pair<View, String> getAccessibilityTarget() {
@@ -236,35 +229,31 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
      * Returns a view matching FloatingViewType and {@link #isOpen()} == true.
      */
     public static <T extends AbstractFloatingView> T getOpenView(
-            ActivityContext activity, @FloatingViewType int type) {
+        ActivityContext activity, @FloatingViewType int type) {
         return getView(activity, type, true /* mustBeOpen */);
     }
 
     /**
-     * Returns whether there is at least one view of the given type where
-     * {@link #isOpen()} == true.
+     * Returns whether there is at least one view of the given type where {@link #isOpen()} == true.
      */
     public static boolean hasOpenView(ActivityContext activity, @FloatingViewType int type) {
         return getOpenView(activity, type) != null;
     }
 
     /**
-     * Returns a view matching FloatingViewType, and {@link #isOpen()} may be false
-     * (if animating
+     * Returns a view matching FloatingViewType, and {@link #isOpen()} may be false (if animating
      * closed).
      */
     public static <T extends AbstractFloatingView> T getAnyView(
-            ActivityContext activity, @FloatingViewType int type) {
+        ActivityContext activity, @FloatingViewType int type) {
         return getView(activity, type, false /* mustBeOpen */);
     }
 
     private static <T extends AbstractFloatingView> T getView(
-            ActivityContext activity, @FloatingViewType int type, boolean mustBeOpen) {
+        ActivityContext activity, @FloatingViewType int type, boolean mustBeOpen) {
         BaseDragLayer dragLayer = activity.getDragLayer();
-        if (dragLayer == null)
-            return null;
-        // Iterate in reverse order. AbstractFloatingView is added later to the
-        // dragLayer,
+        if (dragLayer == null) return null;
+        // Iterate in reverse order. AbstractFloatingView is added later to the dragLayer,
         // and will be one of the last views.
         for (int i = dragLayer.getChildCount() - 1; i >= 0; i--) {
             View child = dragLayer.getChildAt(i);
@@ -279,7 +268,7 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     }
 
     public static void closeOpenContainer(ActivityContext activity,
-            @FloatingViewType int type) {
+                                          @FloatingViewType int type) {
         AbstractFloatingView view = getOpenView(activity, type);
         if (view != null) {
             view.close(true);
@@ -287,7 +276,7 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     }
 
     public static void closeOpenViews(ActivityContext activity, boolean animate,
-            @FloatingViewType int type) {
+                                      @FloatingViewType int type) {
         new AbstractFloatingViewHelper().closeOpenViews(activity, animate, type);
     }
 
@@ -301,13 +290,13 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     }
 
     public static void closeAllOpenViewsExcept(ActivityContext activity, boolean animate,
-            @FloatingViewType int type) {
+                                               @FloatingViewType int type) {
         closeOpenViews(activity, animate, TYPE_ALL & ~type);
         activity.finishAutoCancelActionMode();
     }
 
     public static void closeAllOpenViewsExcept(ActivityContext activity,
-            @FloatingViewType int type) {
+                                               @FloatingViewType int type) {
         closeAllOpenViewsExcept(activity, true, type);
     }
 
@@ -316,7 +305,7 @@ public abstract class AbstractFloatingView extends LinearLayout implements Touch
     }
 
     public static AbstractFloatingView getTopOpenViewWithType(ActivityContext activity,
-            @FloatingViewType int type) {
+                                                              @FloatingViewType int type) {
         return getOpenView(activity, type);
     }
 

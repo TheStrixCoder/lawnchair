@@ -1,7 +1,6 @@
 package com.android.launcher3;
 
 import static com.android.launcher3.config.FeatureFlags.SEPARATE_RECENTS_ACTIVITY;
-
 import static app.lawnchair.util.PackagePermissionManagerKt.checkAndRequestFilesPermission;
 
 import android.app.WallpaperManager;
@@ -34,6 +33,8 @@ public class LauncherRootView extends InsettableFrameLayout {
 
     private final Rect mTempRect = new Rect();
 
+    private final StatefulActivity mActivity;
+
     private final StatefulContainer mStatefulContainer;
 
     @ViewDebug.ExportedProperty(category = "launcher")
@@ -56,7 +57,7 @@ public class LauncherRootView extends InsettableFrameLayout {
         mSysUiScrim = new SysUiScrim(this);
         PreferenceManager2 prefs2 = PreferenceManager2.getInstance(getContext());
         mEnableTaskbarOnPhone = PreferenceExtensionsKt.firstBlocking(prefs2.getEnableTaskbarOnPhone());
-
+        mActivity = StatefulActivity.fromContext(context);
         pref = PreferenceManager.getInstance(getContext());
 
         if (pref.getEnableWallpaperBlur().get()){

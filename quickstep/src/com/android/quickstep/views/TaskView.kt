@@ -519,14 +519,12 @@ constructor(
                             ),
                             { bounds: Rect -> getThumbnailBounds(bounds) },
                             this,
-                            attrs.getColor(
+                            it.getColor(
                                 R.styleable.TaskView_hoverBorderColor,
                                 BorderAnimator.DEFAULT_BORDER_COLOR,
                             ),
                         )
                     else null
-        } finally {
-            attrs.recycle()
         }
     }
 

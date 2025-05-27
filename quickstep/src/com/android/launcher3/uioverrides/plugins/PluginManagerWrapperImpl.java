@@ -74,7 +74,7 @@ public class PluginManagerWrapperImpl extends PluginManagerWrapper {
         // Use null preHandlerManager, as the handler is never unregistered which can cause leaks
         // when using multiple dagger graphs.
         mPluginManager = new PluginManagerImpl(c, instanceManagerFactory,
-                BuildConfig.IS_DEBUG_DEVICE,
+                BuildConfigs.IS_DEBUG_DEVICE,
                 null /* preHandlerManager */, mPluginEnabler,
                 new PluginPrefs(c), privilegedPlugins);
     }

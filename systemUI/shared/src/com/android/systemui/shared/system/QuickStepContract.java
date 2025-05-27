@@ -25,8 +25,16 @@ import static com.android.systemui.shared.Flags.shadeAllowBackGesture;
 import android.annotation.LongDef;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.os.IInterface;
+import android.os.RemoteException;
+import android.util.Log;
 import android.view.ViewConfiguration;
 import android.view.WindowManagerPolicyConstants;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.internal.policy.ScreenDecorationsUtils;
 
@@ -40,6 +48,8 @@ import app.lawnchair.compat.LawnchairQuickstepCompat;
  * Various shared constants between Launcher and SysUI as part of quickstep
  */
 public class QuickStepContract {
+
+    private static final String TAG = "QuickStepContract";
 
     public static final String KEY_EXTRA_SYSUI_PROXY = "extra_sysui_proxy";
     public static final String KEY_EXTRA_UNFOLD_ANIMATION_FORWARDER = "extra_unfold_animation";
@@ -126,6 +136,11 @@ public class QuickStepContract {
     public static final long SYSUI_STATE_SHORTCUT_HELPER_SHOWING = 1L << 32;
     // Touchpad gestures are disabled
     public static final long SYSUI_STATE_TOUCHPAD_GESTURES_DISABLED = 1L << 33;
+
+    // PiP animation is running
+    public static final long SYSUI_STATE_DISABLE_GESTURE_PIP_ANIMATING = 1L << 34;
+    // Communal hub is showing
+    public static final long SYSUI_STATE_COMMUNAL_HUB_SHOWING = 1L << 35;
 
     // Mask for SystemUiStateFlags to isolate SYSUI_STATE_AWAKE and
     // SYSUI_STATE_WAKEFULNESS_TRANSITION, to match WAKEFULNESS_* constants
@@ -415,6 +430,23 @@ public class QuickStepContract {
 
         } catch (Throwable t) {
             return false;
+        }
+    }
+
+
+    /**
+     * Adds the provided interface to the bundle using the interface descriptor as the key
+     */
+    public static void addInterface(@Nullable IInterface iInterface, @NonNull Bundle out) {
+        if (iInterface != null) {
+            IBinder binder = iInterface.asBinder();
+            if (binder != null) {
+                try {
+                    out.putIBinder(binder.getInterfaceDescriptor(), binder);
+                } catch (RemoteException e) {
+                    Log.d(TAG, "Invalid interface description " + binder, e);
+                }
+            }
         }
     }
 }
