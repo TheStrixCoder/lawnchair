@@ -1938,6 +1938,7 @@ public abstract class RecentsView<
             TaskView taskView = getTaskViewFromPool(
                     containsStagedTask ? TaskViewType.SINGLE : groupTask.taskViewType);
             if (taskView instanceof GroupedTaskView) {
+                
                 boolean firstTaskIsLeftTopTask =
                         groupTask.mSplitBounds.leftTopTaskId == groupTask.task1.key.id;
                 Task leftTopTask = firstTaskIsLeftTopTask ? groupTask.task1 : groupTask.task2;

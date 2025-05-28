@@ -311,7 +311,7 @@ public class LauncherBackAnimationController {
         mStartRect.set(appTarget.windowConfiguration.getMaxBounds());
 
         // inset bottom in case of taskbar being present
-        if (!predictiveBackThreeButtonNav() || mLauncher.getDeviceProfile().isTaskbarPresent
+        if ( mLauncher.getDeviceProfile().isTaskbarPresent
                 || DisplayController.getNavigationMode(mLauncher) == NavigationMode.NO_BUTTON) {
             mStartRect.inset(0, 0, 0, appTarget.contentInsets.bottom);
         }
