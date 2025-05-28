@@ -389,8 +389,13 @@ public class RecentTasksList {
                     }
                 }
             }
+            if (taskInfo1.isVisible) {
+                numVisibleTasks++;
+            }
+            final SplitConfigurationOptions.SplitBounds launcherSplitBounds =
+                convertShellSplitBoundsToLauncher(rawTask.getSplitBounds());
 
-            allTasks.add(new GroupTask(task1, task2, null));
+            allTasks.add(new GroupTask(task1, task2, launcherSplitBounds));
         }
 
         return allTasks;
