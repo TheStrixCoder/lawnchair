@@ -36,7 +36,7 @@ import com.android.launcher3.util.PackageUserKey
 import com.android.launcher3.util.Themes
 
 /** Wrapper over ShortcutInfo to provide extra information related to ShortcutInfo */
-class CacheableShortcutInfo(val shortcutInfo: ShortcutInfo, val appInfo: ApplicationInfoWrapper) {
+    class CacheableShortcutInfo(val shortcutInfo: ShortcutInfo, val appInfo: ApplicationInfoWrapper) {
 
     constructor(
         info: ShortcutInfo,
@@ -140,8 +140,12 @@ object CacheableShortcutCachingLogic : CachingLogic<CacheableShortcutInfo> {
 
     override fun getFreshnessIdentifier(
         item: CacheableShortcutInfo,
-        iconProvider: IconProvider,
-    ): String? {
-        TODO("Not yet implemented")
-    }
+        provider: IconProvider,
+    ): String? =
+    // Manifest shortcuts get updated on every reboot. Don't include their change timestamp as
+        // it gets covered by the app's version
+        (if (item.shortcutInfo.isDeclaredInManifest) ""
+        else item.shortcutInfo.lastChangedTimestamp.toString()) +
+            "-" +
+            provider.getStateForApp(getApplicationInfo(item))
 }

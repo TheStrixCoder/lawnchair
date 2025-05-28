@@ -409,7 +409,7 @@ public class RecentTasksList {
             task.positionInParent = taskInfo.positionInParent;
             task.appBounds = taskInfo.configuration.windowConfiguration.getAppBounds();
             task.isVisible = taskInfo.isVisible;
-            task.isMinimised =
+            task.isMinimized =
                     Arrays.stream(minimizedTaskIds).anyMatch(taskId -> taskId == taskInfo.taskId);
             tasks.add(task);
         }

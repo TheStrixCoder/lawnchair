@@ -51,22 +51,6 @@ public class PersonalWorkSlidingTabStrip extends LinearLayout implements PageInd
         typedArray.recycle();
     }
 
-    @Override
-    protected void onFinishInflate() {
-        super.onFinishInflate();
-
-        FontManager fontManager = FontManager.INSTANCE.get(getContext());
-        for (int i = 0; i < getChildCount(); i++) {
-            Button tab = (Button) getChildAt(i);
-            tab.setAllCaps(false);
-            RippleDrawable background = (RippleDrawable) tab.getBackground();
-            background.setDrawableByLayerId(android.R.id.mask, DrawableTokens.AllAppsTabsMaskDrawable.resolve(getContext()));
-            tab.setBackground(DrawableTokens.AllAppsTabsBackground.resolve(getContext()));
-            tab.setTextColor(ColorStateListTokens.AllAppsTabText.resolve(getContext()));
-            fontManager.setCustomFont(tab, R.id.font_body_medium);
-        }
-    }
-
     /**
      * Highlights tab with index pos
      */

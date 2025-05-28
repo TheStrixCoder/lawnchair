@@ -1948,7 +1948,7 @@ public abstract class RecentsView<
                 // Minimized tasks should not be shown in Overview
                 List<Task> nonMinimizedTasks =
                         ((DesktopTask) groupTask).tasks.stream()
-                                .filter(task -> !task.isMinimised)
+                                .filter(task -> !task.isMinimized)
                                 .toList();
                 ((DesktopTaskView) taskView).bind(nonMinimizedTasks, mOrientationState,
                         mTaskOverlayFactory);

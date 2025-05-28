@@ -301,7 +301,6 @@
     <color name="materialColorOutline">@color/system_outline_light</color>
     <color name="materialColorOutlineVariant">@color/system_outline_variant_light</color>
     <color name="materialColorOnPrimary">@color/system_on_primary_light</color>
-    <color name="materialColorOnSurface">@color/system_on_surface_light</color>
     <color name="materialColorSurfaceContainer">@color/system_surface_container_light</color>
     <color name="materialColorPrimary">@color/system_primary_light</color>
     <color name="materialColorSecondary">@color/system_secondary_light</color>

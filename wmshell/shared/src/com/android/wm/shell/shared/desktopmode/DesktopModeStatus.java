@@ -227,8 +227,7 @@ public class DesktopModeStatus {
      * necessarily enabling desktop mode
      */
     public static boolean overridesShowAppHandle(@NonNull Context context) {
-        return Flags.showAppHandleLargeScreens()
-                && context.getResources().getBoolean(R.bool.config_enableAppHandle);
+        return context.getResources().getBoolean(R.bool.config_enableAppHandle);
     }
 
     /**
@@ -280,9 +279,6 @@ public class DesktopModeStatus {
      * of the display's root [TaskDisplayArea] is set to WINDOWING_MODE_FREEFORM.
      */
     public static boolean enterDesktopByDefaultOnFreeformDisplay(@NonNull Context context) {
-        if (!Flags.enterDesktopByDefaultOnFreeformDisplays()) {
-            return false;
-        }
         return SystemProperties.getBoolean(ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAY_SYS_PROP,
                 context.getResources().getBoolean(
                         R.bool.config_enterDesktopByDefaultOnFreeformDisplay));
@@ -293,9 +289,6 @@ public class DesktopModeStatus {
      * screen.
      */
     public static boolean shouldMaximizeWhenDragToTopEdge(@NonNull Context context) {
-        if (!Flags.enableDragToMaximize()) {
-            return false;
-        }
         return SystemProperties.getBoolean(ENABLE_DRAG_TO_MAXIMIZE_SYS_PROP,
                 context.getResources().getBoolean(R.bool.config_dragToMaximizeInDesktopMode));
     }

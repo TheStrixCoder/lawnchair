@@ -37,7 +37,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="LauncherTheme" parent="@style/DynamicColorsBaseLauncherTheme">
+    <style name="LauncherTheme" parent="@style/BaseLauncherTheme">
         <item name="android:textColorSecondary">#DE000000</item>
         <item name="allAppsScrimColor">@color/materialColorSurfaceDim</item>
         <item name="allappsHeaderProtectionColor">@color/materialColorSurfaceContainerHighest</item>
@@ -86,6 +86,46 @@
         <item name="android:switchStyle">@style/SwitchStyle</item>
 
         <item name="materialColorSurfaceContainer">@color/material_color_surface_container</item>
+        <item name="materialColorOnSurface">@color/system_on_surface_light</item>
+        <item name="materialColorOnSecondaryFixedVariant">@color/system_on_secondary_fixed_variant</item>
+        <item name="materialColorOnTertiaryFixedVariant">@color/system_on_tertiary_fixed_variant</item>
+        <item name="materialColorSurfaceContainerLowest">@color/system_surface_container_lowest_light</item>
+        <item name="materialColorOnPrimaryFixedVariant">@color/system_on_primary_fixed_variant</item>
+        <item name="materialColorOnSecondaryContainer">@color/system_on_secondary_container_light</item>
+        <item name="materialColorOnTertiaryContainer">@color/system_on_tertiary_container_light</item>
+        <item name="materialColorSurfaceContainerLow">@color/system_surface_container_low_light</item>
+        <item name="materialColorOnPrimaryContainer">@color/system_on_primary_container_light</item>
+        <item name="materialColorSecondaryFixedDim">@color/system_secondary_fixed_dim</item>
+        <item name="materialColorOnErrorContainer">@color/system_on_error_container_light</item>
+        <item name="materialColorOnSecondaryFixed">@color/system_on_secondary_fixed</item>
+        <item name="materialColorTertiaryFixedDim">@color/system_tertiary_fixed_dim</item>
+        <item name="materialColorOnTertiaryFixed">@color/system_on_tertiary_fixed</item>
+        <item name="materialColorPrimaryFixedDim">@color/system_primary_fixed_dim</item>
+        <item name="materialColorSecondaryContainer">@color/system_secondary_container_light</item>
+        <item name="materialColorErrorContainer">@color/system_error_container_light</item>
+        <item name="materialColorOnPrimaryFixed">@color/system_on_primary_fixed</item>
+        <item name="materialColorSecondaryFixed">@color/system_secondary_fixed</item>
+        <item name="materialColorSurfaceVariant">@color/system_surface_variant_light</item>
+        <item name="materialColorTertiaryContainer">@color/system_tertiary_container_light</item>
+        <item name="materialColorTertiaryFixed">@color/system_tertiary_fixed</item>
+        <item name="materialColorPrimaryContainer">@color/system_primary_container_light</item>
+        <item name="materialColorOnBackground">@color/system_on_background_light</item>
+        <item name="materialColorPrimaryFixed">@color/system_primary_fixed</item>
+        <item name="materialColorOnSecondary">@color/system_on_secondary_light</item>
+        <item name="materialColorOnTertiary">@color/system_on_tertiary_light</item>
+        <item name="materialColorSurfaceDim">@color/system_surface_dim_light</item>
+        <item name="materialColorSurfaceBright">@color/system_surface_bright_light</item>
+        <item name="materialColorOnError">@color/system_on_error_light</item>
+        <item name="materialColorSurface">@color/system_surface_light</item>
+        <item name="materialColorSurfaceContainerHigh">@color/system_surface_container_high_light</item>
+        <item name="materialColorSurfaceContainerHighest">@color/system_surface_container_highest_light</item>
+        <item name="materialColorOnSurfaceVariant">@color/system_on_surface_variant_light</item>
+        <item name="materialColorOutline">@color/system_outline_light</item>
+        <item name="materialColorOutlineVariant">@color/system_outline_variant_light</item>
+        <item name="materialColorOnPrimary">@color/system_on_primary_light</item>
+        <item name="materialColorPrimary">@color/system_primary_light</item>
+        <item name="materialColorSecondary">@color/system_secondary_light</item>
+        <item name="materialColorTertiary">@color/system_tertiary_light</item>
 
 </style>
 

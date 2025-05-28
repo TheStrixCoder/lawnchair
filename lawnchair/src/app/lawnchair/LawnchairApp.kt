@@ -190,20 +190,20 @@ class LawnchairApp : Application() {
         val resId = resources.getIdentifier("config_recentsComponentName", "string", "android")
         if (resId == 0) {
             Log.d(TAG, "config_recentsComponentName not found, disabling recents")
-            return false
+            return true
         }
 
         val recentsComponent = ComponentName.unflattenFromString(resources.getString(resId))
         if (recentsComponent == null) {
             Log.d(TAG, "config_recentsComponentName is empty, disabling recents")
-            return false
+            return true
         }
 
         val isRecentsComponent = recentsComponent.packageName == packageName &&
             recentsComponent.className == RecentsActivity::class.java.name
         if (!isRecentsComponent) {
             Log.d(TAG, "config_recentsComponentName ($recentsComponent) is not Lawnchair, disabling recents")
-            return false
+            return true
         }
 
         return true
